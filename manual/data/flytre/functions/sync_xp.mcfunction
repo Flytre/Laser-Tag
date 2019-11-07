@@ -1,3 +1,5 @@
+#Display the amount of damage the player did on their laser attack
+
 xp set @s 0 points
 xp set @s 0 levels
 
