@@ -1,3 +1,5 @@
+#Give the player armor based on what team they're on
+#NBT: name, Lore, color, armor, HideFlags, AttributeModifiers, Enchantments, Unbreakable
 replaceitem entity @s[team=green] armor.chest minecraft:leather_chestplate{display:{Name:"\"§rBasic Laser Vest\"",Lore:["\"§7Armor: §c0%\""],color:4325135},armor:0,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:"minecraft:binding_curse",lvl:1}],Unbreakable:1b}
 replaceitem entity @s[team=green] armor.legs minecraft:leather_leggings{display:{Name:"\"§rBasic Laser Pants\"",Lore:["\"§7Armor: §c0%\""],color:4325135},armor:0,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:"minecraft:binding_curse",lvl:1}],Unbreakable:1b}
 replaceitem entity @s[team=green] armor.feet minecraft:leather_boots{display:{Name:"\"§rBasic Laser Shoes\"",Lore:["\"§7Armor: §c0%\""],color:4325135},armor:0,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:"minecraft:binding_curse",lvl:1}],Unbreakable:1b}

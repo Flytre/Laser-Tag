@@ -152,3 +152,4 @@ D. Expanded what lasers can shoot through
 131. Map features: smoke particles, jump pads, etc.
 132. Credits: command block/lead, builders, sounds, server host ~ Written but not implemented
 133. Gamemaster Easter Egg
+134. Remove CTF gamemode

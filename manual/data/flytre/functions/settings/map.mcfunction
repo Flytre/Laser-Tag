@@ -1,5 +1,5 @@
 #Outdated file
-#
+#Needs to be updated with map descriptions and a new map
 
 setblock 60 26 50 air
 
