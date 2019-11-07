@@ -1,0 +1,154 @@
+
+Phase 1:
+D. World Spawn
+D. Low res the iron mesh
+D. Replaceitem armor instead of /give
+D. No nametags
+D. Hide credits on game start
+D. Reset cooldown of abilities on death
+D. Make sound play for everyone
+D. Death messages
+D. Redo hitboxes
+D. Win detection
+D. Fix to-lobby
+D. Raycasting -> 1 block offset to 1.6 block
+D. Accuracy -> ~1 to ~0.25
+D. Particle -> make texture much smaller
+D. Precise player hitboxes
+D. Alternate Textures for black concrete
+D. Shift scope
+
+
+Phase 2:
+10. Presets for kits
+D. 0 player team check
+20. FFA
+D. Shooting in class selection
+D. Double you bought, can not afford
+D. Particle count too high
+D. Reset trigger on game start
+D. Make selected slot more visible
+26. Drop items works for some players
+D. Teleport into portal on reset
+D. Remove enchant glimmer
+D. Test for real deaths
+D. Remove teams from all players? Is this a bug? -> Works as intended
+D. Team display names
+D. Sniper Damage
+D. Blink -> As intended
+D. End Rod -> Glint Particle
+D. Better Sneak
+D. 0 Team win condition
+D. Spectator mode
+
+Phase 3:
+26. Drop items works for some players ~ Is this still an issue?
+D. Floor 16x16
+D. No sneak when in spectator
+D. Add more team color texture in the armor
+D. Shotgun
+D. Killed by in death messages
+D. Make it obvious not to buy the same ability twice
+D. Make it obvious the sounds are the guns firing -> LOL nah
+D. Toggle nametags on/off with game start
+D. Prevent blinking into unwanted areas (again!)
+D. Nerf seeker damage
+D. Buff SMG (decrease spray or something)
+D. Clear scope if scoping on game end
+D. Change boots price to 5/10
+D. Bonus regen when holding saber
+D. Scope only on specific guns
+D. Nerf nightmare shot time slightly
+D. Saber prices
+D. Stuck in spectator
+D. Phew fix instant damage doing otherDamage
+D. Highest Kills at end of game
+
+Phase 4:
+10. Presets for kits -> Denied, it isn't fun the
+D. Shotgun Texture
+D. Saber 50 -> 55 coins, 20 -> 25 coins
+D. Blink 25 -> 20 coins
+D. Shotgun: +1 damage/pellet, +0.03 dropoff
+D. Seeker: - 2 damage
+D. Strong Heal: 750 -> 800 hp healed
+D. Nightmare: 85 -> 90 coins
+D. Pistols: +1 damage, +5 coins each
+D. Hunter: 65 -> 70 coins
+D. SMG: 75 -> 70 coins
+D. Combat Chest: 30% -> 35% reduction
+69. Optimize Guns!!
+70. Quad Kill -> glowing
+
+Phase 5:
+D. Optimize Guns!!
+D. Double map -> Need to test
+D. More Maps -> Map selection option
+D. Reveal Powerup: spectral
+74. Preset Kits again
+D. Add FFA and/or CTF ~ CTF Done, Can't do FFA ;(
+D. Crosshair
+77. Sandbox Mode?
+78. Edit Money/round
+D. Team buff ability?
+Denied. AOE stun ability
+81. Iron bars don't show up
+
+Phase 6:
+D.Remove flags
+D.Animated particles? -> doesn't work as expected
+D.Xp bar to represent damage
+D.Rapidstrike reduce spray
+D.Shotgun reduce spray and dropoff
+D.Streak at top of inv
+D. Load maps correctly
+D. Longer night vision timer to prevent flashing
+Denied. Abilities ~ remove text??? _> nitpicky
+D. Smaller Particles
+D. Blink from head _. can't do
+93. Debug stick bars? Low priority
+D. Sniper scope ~ make translucent
+D. Right click test fire
+D. Gun sounds
+D. Dash Particle
+D. Start Button Sound
+99. Sign Texture
+D. Gun Sounds to end of game
+D. Gun sound vol -> 0.3
+
+Phase 7:
+D. Flag bug on green
+D. Rapidstrike buff
+D. Shotty buff Duplicate
+D. Custom font
+D. Buff showstopper
+D. Seeker cost
+D. Saber damage
+D. Nightmare cost
+D. Texture consistency
+D. Overhaul bridge map
+R. Overhaul walls due to ^
+D. Flowerpot -> cauldron
+D. Map ppl for bridges
+115. Respawn timer for ctf
+
+
+Phase 8:
+D. Player nearby icon
+117. Shop Bug
+D.Figure out what's wrong the the font ~ Its all Moesh
+119. Wall Textures ~ Unneeded
+120. Non-tiled Textures ~ Unneeded
+121. Metal Barrel
+122. Map Description
+D. POI and Level orientation
+D.Remove/Re-add teams
+D. Global Ability Buff
+D. Expanded what lasers can shoot through
+127. Redo Shop
+128. Redo Shop Signs
+129. Redo Lobby
+130. Implement new Maps
+131. Map features: smoke particles, jump pads, etc.
+132. Credits: command block/lead, builders, sounds, server host ~ Written but not implemented
+133. Gamemaster Easter Egg

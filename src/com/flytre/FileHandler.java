@@ -125,4 +125,8 @@ class FileHandler {
         return directoryToBeDeleted.delete();
     }
 
+    public static void main(String[] args) {
+        createDatapack("test");
+    }
+
 }

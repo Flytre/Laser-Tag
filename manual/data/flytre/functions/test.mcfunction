@@ -1,0 +1,1 @@
+scoreboard objectives modify health_bar displayname "§c\u2667"

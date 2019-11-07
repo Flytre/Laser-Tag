@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:air",
+    "minecraft:cave_air",
+    "minecraft:iron_bars",
+    "minecraft:scaffolding",
+    "minecraft:ladder",
+    "#minecraft:rails",
+    "#minecraft:carpets",
+    "#minecraft:fences",
+    "#minecraft:flower_pots",
+    "#minecraft:impermeable",
+    "#flytre:panes",
+    "#minecraft:buttons",
+    "#minecraft:saplings",
+    "#minecraft:small_flowers",
+    "#minecraft:wall_signs",
+    "#minecraft:wooden_pressure_plates"
+  ]
+}

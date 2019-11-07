@@ -80,7 +80,7 @@ public class CustomAbility implements CustomItem {
 
         private String id;
         private String displayName;
-        private int cooldown = 30;
+        private int cooldown = 600;
         private String sound = null;
         private String[] effect = null;
         private String[] overTimeEffect = null;
@@ -98,8 +98,8 @@ public class CustomAbility implements CustomItem {
             return this;
         }
 
-        public Builder cooldown(int secs) {
-            cooldown = secs;
+        public Builder cooldown(int ticks) {
+            cooldown = ticks;
             return this;
         }
 

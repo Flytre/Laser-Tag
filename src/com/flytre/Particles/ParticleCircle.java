@@ -12,6 +12,11 @@ public class ParticleCircle extends ParticleShape {
         this.radius = radius;
         this.degreeRotation = (int) (360 / (Math.PI * 0.75 * 2 * radius));
     }
+    public ParticleCircle(String id,double radius, String particleName,double precision) {
+        super(id,particleName);
+        this.radius = radius;
+        this.degreeRotation = (int) (360 / (Math.PI * 0.75 * precision * radius));
+    }
 
 
     public void write() {

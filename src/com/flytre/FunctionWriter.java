@@ -23,7 +23,6 @@ public class FunctionWriter {
         FileHandler.print("{\n" +
                 "  \"replace\": false,\n" +
                 "  \"values\": [\n" +
-                "    \"flytre:generic_base\"\n" +
                 "  ]\n" +
                 "}");
     }
