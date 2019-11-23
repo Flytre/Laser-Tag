@@ -3,7 +3,7 @@ effect give @a saturation 10 0 true
 effect give @a resistance 1 4 true
 effect give @a weakness 1 4 true
 
-#charge the coords for button later
+execute as @a at @s unless entity @e[tag=lobby_start,distance=..60] run tp @s @e[tag=lobby_start,limit=1]
 execute at @e[tag=lobby_start,limit=1,sort=nearest] run spawnpoint @a ~ ~ ~
 scoreboard players set @a health 2000
 
@@ -33,19 +33,20 @@ execute as @a[scores={rejoin=1..}] run gamemode adventure @s
 scoreboard players set @a[scores={rejoin=1..}] rejoin 0
 
 xp set @a 0 levels
+scoreboard players set @a health_bar 100
 
-execute if block 63 26 54 minecraft:stone_button[powered=true] positioned 63 26 54 run playsound flytre.button block @a[distance=..5] ~ ~ ~
-execute if block 63 26 54 minecraft:stone_button[powered=true] run function flytre:game_logic/player_count
-execute if block 63 26 54 minecraft:stone_button[powered=true] if score players global matches 1 run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":" This game requires 2+ players.","color":"red"}]
-execute if block 63 26 54 minecraft:stone_button[powered=true] if score players global matches 2.. if entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  Every player must be on a team to start the game.","color":"red"}]
-execute if block 63 26 54 minecraft:stone_button[powered=true] if score players global matches 2.. if score players_green global matches 0 unless entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  At least 1 player must be on the Creeper team .","color":"red"}]
-execute if block 63 26 54 minecraft:stone_button[powered=true] if score players global matches 2.. if score players_blue global matches 0 unless entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  At least 1 player must be on the Guardian team is required.","color":"red"}]
-execute if block 63 26 54 minecraft:stone_button[powered=true] if score players global matches 2.. unless entity @a[team=] if score players_green global matches 1.. if score players_blue global matches 1.. run function flytre:game_logic/to_class_select
-execute if block 63 26 54 minecraft:stone_button[powered=true] run setblock 63 26 54 minecraft:stone_button[facing=west,powered=false,face=wall]
+execute if block 105 32 9 minecraft:stone_button[powered=true] positioned 105 32 9 run playsound flytre.button block @a[distance=..5] ~ ~ ~
+execute if block 105 32 9 minecraft:stone_button[powered=true] run function flytre:game_logic/player_count
+execute if block 105 32 9 minecraft:stone_button[powered=true] if score players global matches 1 run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":" This game requires 2+ players.","color":"red"}]
+execute if block 105 32 9 minecraft:stone_button[powered=true] if score players global matches 2.. if entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  Every player must be on a team to start the game.","color":"red"}]
+execute if block 105 32 9 minecraft:stone_button[powered=true] if score players global matches 2.. if score players_green global matches 0 unless entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  At least 1 player must be on the Creeper team .","color":"red"}]
+execute if block 105 32 9 minecraft:stone_button[powered=true] if score players global matches 2.. if score players_blue global matches 0 unless entity @a[team=] run tellraw @a ["",{"text":"[","color":"dark_red"},{"text":"Game","color":"red","bold":true},{"text":"]:","color":"dark_red","bold":false},{"text":"  At least 1 player must be on the Guardian team is required.","color":"red"}]
+execute if block 105 32 9 minecraft:stone_button[powered=true] if score players global matches 2.. unless entity @a[team=] if score players_green global matches 1.. if score players_blue global matches 1.. run function flytre:game_logic/to_class_select
+execute if block 105 32 9 minecraft:stone_button[powered=true] run setblock 105 32 9 minecraft:stone_button[facing=south,powered=false,face=wall]
 
 #setting
 scoreboard players enable @a trigger
 execute as @a[scores={trigger=135798}] at @s run function flytre:settings/map
-execute as @a[scores={trigger=135799}] at @s run function flytre:settings/mode
+execute as @a[scores={trigger=135799}] at @s run function flytre:credits
 
 scoreboard players set @a trigger 0

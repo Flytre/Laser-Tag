@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class FunctionWriter {
 
-    private static final String dataLoc = "flytre_custom_items/data";
+    public static final String dataLoc = "flytre_custom_items/data";
 
      static void deleteOld() {
         FileHandler.deleteDirectory("flytre_custom_items");

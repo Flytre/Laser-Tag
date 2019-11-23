@@ -163,7 +163,7 @@ class Implementer {
 
     }
 
-    static void addAbility(CustomAbility ability) {
+    static void addAbility(CustomAbility ability, ShopItem si) {
 
         DecimalFormat df = new DecimalFormat("0.00000");
 
@@ -175,9 +175,8 @@ class Implementer {
 
 
         if (ability.getCooldown() >= 20) {
-            FunctionWriter.addStatment("ability_base", "scoreboard players remove @a[scores={" + ability.getId() + "_cd=..-1}] " + ability.getId() + "_cd " + (ability.getCooldown() / 24));
-            FunctionWriter.addStatment("ability_base", "execute as @a store result entity @s Inventory[{tag:{ability:\"" + ability.getId() + "\"}}].tag.Damage int " + df.format(-24.0 / (ability.getCooldown())) + " run scoreboard players get @s " + ability.getId() + "_cd");
-            FunctionWriter.addStatment("ability_base", "scoreboard players add @a[scores={" + ability.getId() + "_cd=..-1}] " + ability.getId() + "_cd " + (ability.getCooldown() / 24));
+            AbilityTableGenerator atg = new AbilityTableGenerator(ability,si);
+            FunctionWriter.addStatment("ability_base", "execute as @a[nbt={Inventory:[{tag:{ability:\""+ability.getId()+"\"}}]}] run function flytre:abilities/loot/" + ability.getId());
         }
 
         FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0},nbt={SelectedItem:{tag:{ability:\"" + ability.getId() + "\"}}}] at @s run function flytre:abilities/" + ability.getId());
@@ -574,7 +573,7 @@ class Implementer {
             cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/fire_" + g.getId()).cooldown((int) (20 / g.getRps())).build();
         else
             cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/initiate_" + g.getId()).cooldown((int) (20 / g.getRps())).build();
-        addAbility(cag);
+        addAbility(cag,si);
     }
 
     static void postInitializeGun() {
@@ -604,8 +603,76 @@ class Implementer {
         FunctionWriter.makeFunction("testing");
         FunctionWriter.addStatment("generic_base", "function flytre:shop_base");
 
+
+
         initializeGun();
         initializeAbility();
+
+
+
+        //shop
+        ShopItem saber_1 = new ShopItem("saber_1", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c7", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 25, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:13,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
+        saber_1.setNbtGreen("CustomModelData:7");
+        saber_1.setNbtBlue("CustomModelData:8");
+
+        ShopItem saber_2 = new ShopItem("saber_2", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c10", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 55, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:20,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
+        saber_2.setNbtGreen("CustomModelData:7");
+        saber_2.setNbtBlue("CustomModelData:8");
+
+        addShopItem(saber_1);
+        addShopItem(saber_2);
+        ShopItem toughened_vest = new ShopItem("toughened_vest", "leather_chestplate", "§rToughened Vest", new String[]{"§7Armor: §c20%"}, 10, "armor:20,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        toughened_vest.setColorBlue(262348);
+        toughened_vest.setColorGreen(4325135);
+        addShopItem(toughened_vest);
+
+        ShopItem combat_vest = new ShopItem("combat_vest", "leather_chestplate", "§rCombat Vest", new String[]{"§7Armor: §c40%"}, 30, "armor:40,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        combat_vest.setColorBlue(262348);
+        combat_vest.setColorGreen(4325135);
+        addShopItem(combat_vest);
+
+        ShopItem toughened_legs = new ShopItem("toughened_legs", "leather_leggings", "§rToughened Pants", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        toughened_legs.setColorBlue(262348);
+        toughened_legs.setColorGreen(4325135);
+        addShopItem(toughened_legs);
+
+        ShopItem combat_legs = new ShopItem("combat_legs", "leather_leggings", "§rCombat Pants", new String[]{"§7Armor: §c30%"}, 25, "armor:30,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        combat_legs.setColorBlue(262348);
+        combat_legs.setColorGreen(4325135);
+        addShopItem(combat_legs);
+
+        ShopItem trooper_boots = new ShopItem("trooper_boots", "leather_boots", "§rTrooper Boots", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        trooper_boots.setColorBlue(262348);
+        trooper_boots.setColorGreen(4325135);
+        addShopItem(trooper_boots);
+
+        ShopItem combat_boots = new ShopItem("combat_boots", "leather_boots", "§rCombat Boots", new String[]{"§7Armor: §c25%"}, 20, "armor:25,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
+        combat_boots.setColorBlue(262348);
+        combat_boots.setColorGreen(4325135);
+        addShopItem(combat_boots);
+
+        ShopItem dasher = new ShopItem("dash", "carrot_on_a_stick", "§eDash", new String[]{"§7Gain Speed §62§7 for §65§7 seconds.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"dash\",CustomModelData:9");
+        addShopItem(dasher);
+
+        ShopItem blinker = new ShopItem("blink", "carrot_on_a_stick", "§eBlink", new String[]{"§7Teleport up to §68§7 blocks forward.", "§7Aim slightly upwards for better results.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"blink\",CustomModelData:10");
+        addShopItem(blinker);
+
+        ShopItem weakheal = new ShopItem("weak_heal", "carrot_on_a_stick", "§eWeak Heal", new String[]{"§7Heal §63.0§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"weak_heal\",CustomModelData:11");
+        addShopItem(weakheal);
+
+        ShopItem strongheal = new ShopItem("strong_heal", "carrot_on_a_stick", "§eStrong Heal", new String[]{"§7Heal §66.0§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 25, "ability:\"strong_heal\",CustomModelData:11");
+        addShopItem(strongheal);
+
+        CustomGun shotty = new CustomGun("shotty", 7, 50, 1, 0.09, 18, 8, "flytre.shotgun.fire", "§6Omega §rShowstopper", 65, "shotgun");
+        addGun(shotty);
+
+        ShopItem concussion = new ShopItem("team_heal", "carrot_on_a_stick", "§eTeam Heal", new String[]{"§7Heal your team for §61.5§7 hearts.", "§7The same ability does §cNOT§7 stack for the same person."}, 25, "ability:\"team_heal\",CustomModelData:16");
+        addShopItem(concussion);
+
+        ShopItem spectraleye = new ShopItem("spectral_eye", "carrot_on_a_stick", "§eSpectral Eye", new String[]{"§7Reveal players within §612§7 blocks.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"spectral_eye\",CustomModelData:15");
+        addShopItem(spectraleye);
+
+
         CustomGun soft_sniper = new CustomGun("soft_sniper", 13, 70, 0.4, 0.0, 2, 50, "flytre.sniper.fire", "§6SpaceTech §rSeeker", 55, "sniper");
         CustomGun hard_sniper = new CustomGun("hard_sniper", 22, 95, 0.18, 0.0, 0, 50, "flytre.sniper.fire", "§6FlyteForce §rNightmare", 95, "sniper");
 
@@ -646,80 +713,20 @@ class Implementer {
         CustomAbility spectral = new CustomAbility.Builder("spectral_eye").message("Your spectral eye has activated, revealing nearby enemies!").cooldown(500).displayName("§eSpectral Eye").effect(new String[]{"execute rotated ~ 0 run function flytre:particles/spectral_eye", "execute as @s[team=blue] run effect give @a[team=green,distance=..18] glowing 5 0 true", "execute as @s[team=green] run effect give @a[team=blue,distance=..18] glowing 5 0 true"}).sound("flytre.powerup.2").build();
 
 
-        addAbility(weak_heal);
-        addAbility(strong_heal);
-        addAbility(dash);
-        addAbility(blink);
-        addAbility(team_heal);
-        addAbility(spectral);
+        addAbility(weak_heal, weakheal);
+        addAbility(strong_heal, strongheal);
+        addAbility(dash, dasher);
+        addAbility(blink, blinker);
+        addAbility(team_heal, concussion);
+        addAbility(spectral, spectraleye);
 
 
-        //shop
-        ShopItem saber_1 = new ShopItem("saber_1", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c7", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 25, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:13,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
-        saber_1.setNbtGreen("CustomModelData:7");
-        saber_1.setNbtBlue("CustomModelData:8");
-
-        ShopItem saber_2 = new ShopItem("saber_2", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c10", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 55, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:20,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
-        saber_2.setNbtGreen("CustomModelData:7");
-        saber_2.setNbtBlue("CustomModelData:8");
-
-        addShopItem(saber_1);
-        addShopItem(saber_2);
-        ShopItem toughened_vest = new ShopItem("toughened_vest", "leather_chestplate", "§rToughened Vest", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        toughened_vest.setColorBlue(262348);
-        toughened_vest.setColorGreen(4325135);
-        addShopItem(toughened_vest);
-
-        ShopItem combat_vest = new ShopItem("combat_vest", "leather_chestplate", "§rCombat Vest", new String[]{"§7Armor: §c35%"}, 30, "armor:35,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_vest.setColorBlue(262348);
-        combat_vest.setColorGreen(4325135);
-        addShopItem(combat_vest);
-
-        ShopItem toughened_legs = new ShopItem("toughened_legs", "leather_leggings", "§rToughened Pants", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        toughened_legs.setColorBlue(262348);
-        toughened_legs.setColorGreen(4325135);
-        addShopItem(toughened_legs);
-
-        ShopItem combat_legs = new ShopItem("combat_legs", "leather_leggings", "§rCombat Pants", new String[]{"§7Armor: §c25%"}, 25, "armor:25,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_legs.setColorBlue(262348);
-        combat_legs.setColorGreen(4325135);
-        addShopItem(combat_legs);
-
-        ShopItem trooper_boots = new ShopItem("trooper_boots", "leather_boots", "§rTrooper Boots", new String[]{"§7Armor: §c10%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        trooper_boots.setColorBlue(262348);
-        trooper_boots.setColorGreen(4325135);
-        addShopItem(trooper_boots);
-
-        ShopItem combat_boots = new ShopItem("combat_boots", "leather_boots", "§rCombat Boots", new String[]{"§7Armor: §c20%"}, 20, "armor:25,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_boots.setColorBlue(262348);
-        combat_boots.setColorGreen(4325135);
-        addShopItem(combat_boots);
-
-        ShopItem dasher = new ShopItem("dash", "carrot_on_a_stick", "§eDash", new String[]{"§7Gain Speed §62§7 for §65§7 seconds.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"dash\",CustomModelData:9");
-        addShopItem(dasher);
-
-        ShopItem blinker = new ShopItem("blink", "carrot_on_a_stick", "§eBlink", new String[]{"§7Teleport up to §68§7 blocks forward.", "§7Aim slightly upwards for better results.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"blink\",CustomModelData:10");
-        addShopItem(blinker);
-
-        ShopItem weakheal = new ShopItem("weak_heal", "carrot_on_a_stick", "§eWeak Heal", new String[]{"§7Heal §62.5§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"weak_heal\",CustomModelData:11");
-        addShopItem(weakheal);
-
-        ShopItem strongheal = new ShopItem("strong_heal", "carrot_on_a_stick", "§eStrong Heal", new String[]{"§7Heal §64.0§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 25, "ability:\"strong_heal\",CustomModelData:11");
-        addShopItem(strongheal);
-
-        CustomGun shotty = new CustomGun("shotty", 7, 50, 1, 0.09, 18, 8, "flytre.shotgun.fire", "§6Omega §rShowstopper", 65, "shotgun");
-        addGun(shotty);
-
-        ShopItem concussion = new ShopItem("team_heal", "carrot_on_a_stick", "§eTeam Heal", new String[]{"§7Heal your team for §61.5§7 hearts.", "§7The same ability does §cNOT§7 stack for the same person."}, 25, "ability:\"team_heal\",CustomModelData:16");
-        addShopItem(concussion);
-
-        ShopItem spectraleye = new ShopItem("spectral_eye", "carrot_on_a_stick", "§eSpectral Eye", new String[]{"§7Reveal players within §612§7 blocks.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"spectral_eye\",CustomModelData:15");
-        addShopItem(spectraleye);
 
 
         postInitializeAbility();
         postInitializeGun();
 
         FunctionWriter.addStatment("shop_base", "scoreboard players set @a trigger 0");
+
     }
 }

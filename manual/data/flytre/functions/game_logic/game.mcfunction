@@ -2,11 +2,16 @@
 #green_spawn, blue_spawn
 #map_center
 #shop
-#lobby_start
+#lobby_startw
 
 
+
+#abilities + phasers xD
+function flytre:generic_base
 
 #calculate the amount of armor the player has (aka damage resistance)
+
+
 scoreboard players set @a armor 0
 execute as @a store result score @s armor3 run data get entity @s Inventory[{Slot:102b}].tag.armor
 execute as @a run scoreboard players operation @s armor += @s armor3
@@ -22,9 +27,9 @@ bossbar set flytre:green_score players @a
 
 
 #prevent players from going out of bounds
-execute as @a[gamemode=spectator] at @s if block ~ ~ ~ cave_air run tp @s @e[tag=map_center,sort=nearest,limit=1]
-execute as @a[team=green] at @s if block ~ ~ ~ cave_air run tp @s @e[tag=green_spawn,sort=nearest,limit=1]
-execute as @a[team=blue] at @s if block ~ ~ ~ cave_air run tp @s @e[tag=blue_spawn,sort=nearest,limit=1]
+execute as @a[gamemode=spectator] at @s unless entity @e[tag=map_center,distance=..70] run tp @s @e[tag=map_center,sort=nearest,limit=1]
+execute as @a[team=green] at @s unless entity @e[tag=map_center,distance=..70] run tp @s @e[tag=green_spawn,sort=nearest,limit=1]
+execute as @a[team=blue] at @s unless entity @e[tag=map_center,distance=..70] run tp @s @e[tag=blue_spawn,sort=nearest,limit=1]
 
 #make sure players don't take damage from normal sources and give them night vision
 effect give @a resistance 1 4 true
@@ -133,12 +138,22 @@ replaceitem entity @a[scores={sneak=1..},nbt={SelectedItem:{tag:{scope:1}}},game
 scoreboard players set @a sneak 0
 
 #prevent item drops
-execute as @e[type=item] at @s run data merge entity @s {PickupDelay:0}
+execute as @e[type=item,tag=!onDisplay] at @s run data merge entity @s {PickupDelay:0}
 
 #saber regens health
 scoreboard players add healthSeconds global 1
 execute if score healthSeconds global matches 20.. run scoreboard players add @a[nbt={SelectedItem:{tag:{type:"saber"}}}] health 10
 execute if score healthSeconds global matches 20.. run scoreboard players set healthSeconds global 0
+
+#map effects
+execute as @a[x=3042,y=38,z=-36,dx=-4,dy=2,dz=4,gamemode=!spectator] at @s if block ~ ~-1 ~ minecraft:slime_block run effect give @s minecraft:levitation 4 4 true
+particle minecraft:cloud 3039 38 -35 1 0.5 1 0 1 force
+particle minecraft:cloud 3055 39 -79 1 0.5 1 0 1 force
+execute as @a[x=3057,y=38,z=-80,dx=-4,dy=2,dz=4,gamemode=!spectator] at @s if block ~ ~-1 ~ minecraft:slime_block run effect give @s minecraft:levitation 4 4 true
+
+particle minecraft:smoke 962 24 -20 0 3 3 0 2 force
+particle minecraft:smoke 969 24 -20 0 3 3 0 2 force
+particle minecraft:smoke 975 24 -20 0 3 3 0 2 force
 
 
 #reset scoreboard

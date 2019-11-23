@@ -1,7 +1,7 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/04/2019 07:50
+#Created: 11/23/2019 09:23
 ####################################################################################################
 
 scoreboard objectives add health dummy
@@ -31,14 +31,21 @@ team add green
 team add blue
 scoreboard objectives add rightclick minecraft.used:minecraft.carrot_on_a_stick
 scoreboard objectives add custom_item dummy
+scoreboard players set shotty armorPen 50
+scoreboard players set shotty dropoff 9775
+scoreboard players set shotty spray 18
+scoreboard objectives add shotty_cd dummy
+scoreboard objectives add shotty_ud dummy
 scoreboard players set soft_sniper armorPen 70
 scoreboard players set soft_sniper dropoff 10000
 scoreboard players set soft_sniper spray 2
 scoreboard objectives add soft_sniper_cd dummy
+scoreboard objectives add soft_sniper_ud dummy
 scoreboard players set hard_sniper armorPen 95
 scoreboard players set hard_sniper dropoff 10000
 scoreboard players set hard_sniper spray 0
 scoreboard objectives add hard_sniper_cd dummy
+scoreboard objectives add hard_sniper_ud dummy
 scoreboard players set pistol_1 armorPen 20
 scoreboard players set pistol_1 dropoff 9850
 scoreboard players set pistol_1 spray 12
@@ -64,12 +71,14 @@ scoreboard players set ar_2 dropoff 9975
 scoreboard players set ar_2 spray 10
 scoreboard objectives add ar_2_cd dummy
 scoreboard objectives add weak_heal_cd dummy
+scoreboard objectives add weak_heal_ud dummy
 scoreboard objectives add strong_heal_cd dummy
+scoreboard objectives add strong_heal_ud dummy
 scoreboard objectives add dash_cd dummy
+scoreboard objectives add dash_ud dummy
 scoreboard objectives add blink_cd dummy
+scoreboard objectives add blink_ud dummy
 scoreboard objectives add team_heal_cd dummy
+scoreboard objectives add team_heal_ud dummy
 scoreboard objectives add spectral_eye_cd dummy
-scoreboard players set shotty armorPen 50
-scoreboard players set shotty dropoff 9775
-scoreboard players set shotty spray 18
-scoreboard objectives add shotty_cd dummy
+scoreboard objectives add spectral_eye_ud dummy

@@ -82,4 +82,16 @@ public class ShopItem {
     public void setColorBlue(int colorBlue) {
         this.colorBlue = colorBlue;
     }
+    
+    
+    public String getFullNBTGreen() {
+
+        return "{display:{Name:\"\\\"" + getName() + "\\\"\",Lore:[" + String.join(",", getLore()) + "]" + (getColorGreen() != -1 ? "," + "color:" + getColorGreen() : "") + "}" + (getNbtNoBrackets().length() > 0 ? "," + getNbtNoBrackets() : "") + (getNbtGreen().length() > 0 ? "," + getNbtGreen() : "") + "}";
+        
+    }
+
+    public String getFullNBTBlue() {
+        return "{display:{Name:\"\\\"" + getName() + "\\\"\",Lore:[" + String.join(",", getLore()) + "]" + (getColorBlue() != -1 ? "," + "color:" + getColorBlue() : "") + "}" + (getNbtNoBrackets().length() > 0 ? "," + getNbtNoBrackets() : "") + (getNbtBlue().length() > 0 ? "," + getNbtBlue() : "") + "}";
+
+    }
 }

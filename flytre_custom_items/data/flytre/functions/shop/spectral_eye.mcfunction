@@ -1,7 +1,7 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/04/2019 07:50
+#Created: 11/23/2019 09:23
 ####################################################################################################
 
 tellraw @s[scores={credits=20..}] ["",{"text":"[","color":"green"},{"text":"Shop","color":"none"},{"text":"]","color":"green"},{"text":": You have bought a","color":"none"},{"text":" §eSpectral Eye","color":"gold"},{"text":".","color":"none"}]

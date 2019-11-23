@@ -136,10 +136,10 @@ D. Map ppl for bridges
 Phase 8:
 D. Player nearby icon
 117. Shop Bug
-D.Figure out what's wrong the the font ~ Its all Moesh
-119. Wall Textures ~ Unneeded
-120. Non-tiled Textures ~ Unneeded
-121. Metal Barrel
+D.Figure out what is wrong the the font ~ Its all Moesh
+R. Wall Textures ~ Unneeded
+R. Non-tiled Textures ~ Unneeded
+D. Metal Barrel
 122. Map Description
 D. POI and Level orientation
 D.Remove/Re-add teams
@@ -153,3 +153,17 @@ D. Expanded what lasers can shoot through
 132. Credits: command block/lead, builders, sounds, server host ~ Written but not implemented
 133. Gamemaster Easter Egg
 134. Remove CTF gamemode
+135. Redo scripts etc.
+
+Welcome to Laser Tag!
+Make sure you have the resource pack.
+Climb up to continue.
+
+When the round starts,
+make your own custom loadout.
+
+Kill the other team to get points!
+
+Are you ready?
+
+136. Bossbar bug

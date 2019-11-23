@@ -1,9 +1,10 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/04/2019 07:50
+#Created: 11/23/2019 09:23
 ####################################################################################################
 
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"shotty\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"shotty\"}"}},{"text":": give yourself a(n) shotty ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"soft_sniper\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"soft_sniper\"}"}},{"text":": give yourself a(n) soft_sniper ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"hard_sniper\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"hard_sniper\"}"}},{"text":": give yourself a(n) hard_sniper ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"pistol_1\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"pistol_1\"}"}},{"text":": give yourself a(n) pistol_1 ability.","color":"green"}]
@@ -18,4 +19,3 @@ tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"dash\"}","color":"g
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"blink\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"blink\"}"}},{"text":": give yourself a(n) §eBlink ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"team_heal\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"team_heal\"}"}},{"text":": give yourself a(n) §eTeam Heal ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"spectral_eye\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"spectral_eye\"}"}},{"text":": give yourself a(n) §eSpectral Eye ability.","color":"green"}]
-tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"shotty\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"shotty\"}"}},{"text":": give yourself a(n) shotty ability.","color":"green"}]

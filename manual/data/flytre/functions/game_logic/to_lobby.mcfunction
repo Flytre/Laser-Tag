@@ -24,11 +24,6 @@ execute if score players_green global matches 0 run title @a subtitle ["",{"text
 execute if score green_score global matches 10000.. run title @a subtitle ["",{"text":"Creeper Victory!","color":"green","bold":true}]
 execute if score blue_score global matches 10000.. run title @a subtitle ["",{"text":"Guardian Victory!","color":"blue","bold":true}]
 
-tellraw @a ["",{"text":"Custom sounds obtained from "},{"text":"zapsplat.com","clickEvent":{"action":"open_url","value":" zapsplat.com"}}]
-tellraw @a ["",{"text":"Commands/Project Lead"},{"text":"Flytre"}]
-tellraw @a ["",{"text":"Building"},{"text":"Lil_jeffy,Nickonautica,WrigglyGiggly"}]
-
-
 
 tellraw @a ["",{"text":"Final Score: "},{"score":{"name":"green_score","objective":"global"},"color":"green"},{"text":"-","color":"black"},{"score":{"name":"blue_score","objective":"global"},"color":"aqua"}]
 
