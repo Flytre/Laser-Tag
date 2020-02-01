@@ -1,7 +1,7 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/23/2019 09:23
+#Created: 02/01/2020 17:56
 ####################################################################################################
 
 execute as @s[team=blue,nbt={Inventory:[{Slot:0b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s hotbar.0 loot flytre:abilities/soft_sniper_blue
@@ -22,3 +22,5 @@ execute as @s[team=blue,nbt={Inventory:[{Slot:7b,tag:{ability:"soft_sniper"}}]}]
 execute as @s[team=green,nbt={Inventory:[{Slot:7b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s hotbar.7 loot flytre:abilities/soft_sniper_green
 execute as @s[team=blue,nbt={Inventory:[{Slot:8b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s hotbar.8 loot flytre:abilities/soft_sniper_blue
 execute as @s[team=green,nbt={Inventory:[{Slot:8b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s hotbar.8 loot flytre:abilities/soft_sniper_green
+execute as @s[team=blue,nbt={Inventory:[{Slot:-106b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s weapon.offhand loot flytre:abilities/soft_sniper_blue
+execute as @s[team=green,nbt={Inventory:[{Slot:-106b,tag:{ability:"soft_sniper"}}]}] run loot replace entity @s weapon.offhand loot flytre:abilities/soft_sniper_green

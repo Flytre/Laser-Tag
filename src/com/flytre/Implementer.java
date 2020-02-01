@@ -1,9 +1,10 @@
 package com.flytre;
 
 import com.flytre.CustomItems.*;
-import com.flytre.Particles.*;
+import com.flytre.Particles.ParticleHelix;
+import com.flytre.Particles.ParticleShape;
 
-import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 class Implementer {
 
@@ -60,6 +61,13 @@ class Implementer {
 
         FunctionWriter.addObj("rightclick", "minecraft.used:minecraft.carrot_on_a_stick");
         FunctionWriter.addObj("custom_item");
+
+        FunctionWriter.addStatment("ability_base", "effect clear @a[scores={fatigue=0,rightclick=0}] mining_fatigue");
+        FunctionWriter.addStatment("ability_base", "execute as @a store result score @s fatigue run data get entity @s SelectedItem.tag.Damage 100");
+        FunctionWriter.addStatment("ability_base", "effect give @a[scores={fatigue=1..}] mining_fatigue 1 255 true");
+        FunctionWriter.addStatment("ability_base", "effect give @a[scores={rightclick=1..}] mining_fatigue 1 255 true");
+
+        FunctionWriter.makeFunction("reset_abilities");
 
     }
 
@@ -140,18 +148,19 @@ class Implementer {
      */
     static void addSword(CustomSword sword) {
 
-        if (sword.getEffect() != null)
-            for (String s : sword.getEffect()) {
 
-                if (sword.getType().equals("damage_as_victim"))
-                    FunctionWriter.addStatment("sword_base", "execute as @a[scores={damageDealt=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run execute as @e[nbt={HurtTime:10s},distance=..5,limit=1] at @s run " + s);
+        for (String s : sword.getEffect()) {
 
-                else if (sword.getType().equals("damage_as_attacker"))
-                    FunctionWriter.addStatment("sword_base", "execute as @a[scores={damageDealt=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run " + s);
-                else if (sword.getType().equals("kill_as_attacker"))
-                    FunctionWriter.addStatment("sword_base", "execute as @a[scores={killedEntity=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run " + s);
+            if (sword.getType().equals("damage_as_victim"))
+                FunctionWriter.addStatment("sword_base", "execute as @a[scores={damageDealt=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run execute as @e[nbt={HurtTime:10s},distance=..5,limit=1] at @s run " + s);
 
-            }
+            else if (sword.getType().equals("damage_as_attacker"))
+                FunctionWriter.addStatment("sword_base", "execute as @a[scores={damageDealt=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run " + s);
+            else if (sword.getType().equals("kill_as_attacker"))
+                FunctionWriter.addStatment("sword_base", "execute as @a[scores={killedEntity=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run " + s);
+
+
+        }
         if (sword.getType().equals("damage_as_victim") || sword.getType().equals("damage_as_attacker"))
             FunctionWriter.addStatment("sword_base", "execute as @a[scores={damageDealt=1..},nbt={SelectedItem:{tag:{ability:\"" + sword.getId() + "\"}}}] at @s run execute as @e[nbt={HurtTime:10s},distance=..5,limit=1] at @s run particle " + sword.getParticle() + " ~-0.1 ~0.65 ~-.1 0.2 0.75 0.2 0 35 force");
         if (sword.getType().equals("kill_as_attacker"))
@@ -164,53 +173,113 @@ class Implementer {
     }
 
     static void addAbility(CustomAbility ability, ShopItem si) {
+        addAbility(ability, si, null);
+    }
 
-        DecimalFormat df = new DecimalFormat("0.00000");
+    static void addAbility(CustomAbility ability, ShopItem si, CustomGun g) {
 
         FunctionWriter.makeFunction("abilities/" + ability.getId());
         FunctionWriter.addObj(ability.getId() + "_cd");
 
-        FunctionWriter.addStatment("ability_base", "scoreboard players add @a[nbt={SelectedItem:{tag:{ability:\"" + ability.getId() + "\"}}}] " + ability.getId() + "_cd 0");
-        FunctionWriter.addStatment("ability_base", "scoreboard players add @a[scores={" + ability.getId() + "_cd=..-1}] " + ability.getId() + "_cd 1");
+        FunctionWriter.setLoc("ability_base");
+        FunctionWriter.section(true);
+        FunctionWriter.comment("Ability: " + ability.getId());
+        FunctionWriter.scomment("Update cooldown.");
+        FunctionWriter.state("scoreboard players add @a " + ability.getId() + "_cd 0");
+        FunctionWriter.state("scoreboard players add @a[scores={" + ability.getId() + "_cd=..-1}] " + ability.getId() + "_cd 1");
 
+        AbilityTableGenerator atg = new AbilityTableGenerator(ability, si);
 
-        if (ability.getCooldown() >= 20) {
-            AbilityTableGenerator atg = new AbilityTableGenerator(ability,si);
-            FunctionWriter.addStatment("ability_base", "execute as @a[nbt={Inventory:[{tag:{ability:\""+ability.getId()+"\"}}]}] run function flytre:abilities/loot/" + ability.getId());
+        if (ability.getCharges() > 1) {
+
+            FunctionWriter.addObj(ability.getId() + "_cl");
+            FunctionWriter.addObj(ability.getId() + "_rl");
+            FunctionWriter.setLoc("ability_base");
+            FunctionWriter.scomment("Update reload time and refill clip when fully reloaded.");
+            FunctionWriter.state("scoreboard players set @a[scores={" + ability.getId() + "_rl=-1}] " + ability.getId() + "_cl " + ability.getCharges());
+            FunctionWriter.state("scoreboard players add @a[scores={" + ability.getId() + "_rl=..-1}] " + ability.getId() + "_rl 1");
+            FunctionWriter.state("scoreboard players add @a " + ability.getId() + "_rl 0");
+            FunctionWriter.state("scoreboard players add @a " + ability.getId() + "_cl 0");
         }
 
-        FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0},nbt={SelectedItem:{tag:{ability:\"" + ability.getId() + "\"}}}] at @s run function flytre:abilities/" + ability.getId());
+
+        if (ability.getCooldown() >= 25) {
+            FunctionWriter.setLoc("ability_base");
+            FunctionWriter.scomment("Update the durability bar based on the cooldown bar.");
+            if (ability.getCharges() > 1) {
+                FunctionWriter.state("scoreboard players add @a " + ability.getId() + "_cd 1");
+                FunctionWriter.state("execute as @a[scores={" + ability.getId() + "_rl=0..," + ability.getId() + "_cd=..-1},nbt={Inventory:[{tag:{ability:\"" + ability.getId() + "\"}}]}] run function flytre:abilities/loot/" + ability.getId());
+                FunctionWriter.state("scoreboard players remove @a " + ability.getId() + "_cd 1");
+            } else
+                FunctionWriter.state("execute as @a[nbt={Inventory:[{tag:{ability:\"" + ability.getId() + "\"}}]}] run function flytre:abilities/loot/" + ability.getId());
+        }
 
 
-        FunctionWriter.addStatment("abilities/" + ability.getId(), "");
+        if (ability.getCharges() > 1) {
+            FunctionWriter.setLoc("ability_base");
+            FunctionWriter.scomment("Update the charges and reload durability bar when needed.");
+            FunctionWriter.state("execute as @a[scores={" + ability.getId() + "_cd=0..," + ability.getId() + "_rl=0," + ability.getId() + "_cl=1..}] run function flytre:abilities/loot/" + ability.getId() + "_clip");
+            FunctionWriter.state("scoreboard players add @a " + ability.getId() + "_rl 1");
+            FunctionWriter.state("execute as @a[scores={" + ability.getId() + "_rl=..0},nbt={Inventory:[{tag:{ability:\"" + ability.getId() + "\"}}]}] run function flytre:abilities/loot/" + ability.getId() + "_reload");
+            FunctionWriter.state("scoreboard players remove @a " + ability.getId() + "_rl 1");
+
+        }
+
+        FunctionWriter.scomment("Run the ability when the conditions are right.");
+        if (ability.getCharges() == 1) {
+            FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0},nbt={SelectedItem:{tag:{ability:\"" + ability.getId() + "\"}}}] at @s run function flytre:abilities/" + ability.getId());
+            if (g == null || g.getType().equals("pistol")) {
+                FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0},nbt={Inventory:[{Slot:-106b,tag:{ability:\"" + ability.getId() + "\"}}]}] at @s run function flytre:abilities/" + ability.getId());
+            }
+        } else {
+            FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0," + ability.getId() + "_cl=1..," + ability.getId() + "_rl=0},nbt={SelectedItem:{tag:{ability:\"" + ability.getId() + "\"}}}] at @s run function flytre:abilities/" + ability.getId());
+            if (g == null || g.getType().equals("pistol")) {
+                FunctionWriter.addStatment("ability_base", "execute as @a[scores={rightclick=1..," + ability.getId() + "_cd=0," + ability.getId() + "_cl=1..," + ability.getId() + "_rl=0},nbt={Inventory:[{Slot:-106b,tag:{ability:\"" + ability.getId() + "\"}}]}] at @s run function flytre:abilities/" + ability.getId());
+            }
+        }
 
 
+        FunctionWriter.setLoc("abilities/" + ability.getId());
+        FunctionWriter.comment("Add a sound, message, and all effects.");
         if (ability.getSound() != null)
-            FunctionWriter.addStatment("abilities/" + ability.getId(), "playsound " + ability.getSound() + " player @s");
+            FunctionWriter.state("playsound " + ability.getSound() + " player @s");
 
         if (ability.getMessage() != null)
-            FunctionWriter.addStatment("abilities/" + ability.getId(), "tellraw @s [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Ability\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\":\",\"color\":\"none\"},{\"text\":\" " + ability.getMessage() + "\",\"color\":\"none\"}]");
-
+            FunctionWriter.state("tellraw @s [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Ability\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\":\",\"color\":\"none\"},{\"text\":\" " + ability.getMessage() + "\",\"color\":\"none\"}]");
 
         if (ability.getEffect() != null)
-            for (String s : ability.getEffect()) {
+            for (String s : ability.getEffect())
                 FunctionWriter.addStatment("abilities/" + ability.getId(), s);
-            }
 
-        FunctionWriter.addStatment("abilities/" + ability.getId(), "scoreboard players set @s " + ability.getId() + "_cd " + (ability.getCooldown() * -1));
+        FunctionWriter.scomment("Update the clip, reload time, cooldown, and item.");
+        if (ability.getCharges() > 1) {
+            FunctionWriter.state("scoreboard players remove @s " + ability.getId() + "_cl 1");
+            FunctionWriter.state("execute as @s[scores={" + ability.getId() + "_rl=0," + ability.getId() + "_cl=1..}] run function flytre:abilities/loot/" + ability.getId() + "_clip");
+
+            FunctionWriter.state("execute as @s[scores={" + ability.getId() + "_cl=..0}] run scoreboard players set @s " + ability.getId() + "_rl " + (ability.getReloadTime() * -1));
+        }
+
+        FunctionWriter.state("scoreboard players set @s " + ability.getId() + "_cd " + (ability.getCooldown() * -1));
+
 
         if (ability.getOverTimeEffect() != null && ability.getOverTimeDuration() > 0)
             for (String s : ability.getOverTimeEffect()) {
                 FunctionWriter.makeFunction("abilities/" + ability.getId() + "_time");
+                FunctionWriter.addStatment("ability_base", "\n#Overtime effect");
                 FunctionWriter.addStatment("ability_base", "execute as @a[scores={" + ability.getId() + "_cd=" + (ability.getCooldown() * -1) + ".." + ((ability.getCooldown() - ability.getOverTimeDuration()) * -1) + "}] at @s run function flytre:abilities/" + ability.getId() + "_time");
-
                 FunctionWriter.addStatment("abilities/" + ability.getId() + "_time", s);
 
             }
 
-
         FunctionWriter.addStatment("info", "tellraw @s [\"\",{\"text\":\"/give @s carrot_on_a_stick{ability:\\\"" + ability.getId() + "\\\"}\",\"color\":\"gold\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/give @s carrot_on_a_stick{ability:\\\"" + ability.getId() + "\\\"}\"}},{\"text\":\": give yourself a(n) " + ability.getDisplayName() + " ability.\",\"color\":\"green\"}]");
 
+        FunctionWriter.setLoc("reset_abilities");
+        FunctionWriter.scomment("Ability: " + ability.getId());
+        FunctionWriter.state("scoreboard players set @s " + ability.getId() + "_cd 0");
+        if (ability.getCharges() > 1) {
+            FunctionWriter.state("scoreboard players set @s " + ability.getId() + "_rl 0");
+            FunctionWriter.state("scoreboard players set @s " + ability.getId() + "_cl " + ability.getCharges());
+        }
     }
 
 
@@ -364,6 +433,12 @@ class Implementer {
     }
 
     static void initializeGun() {
+        FunctionWriter.addObjComment("Health handling not included.");
+        FunctionWriter.addObj("health");
+        FunctionWriter.addObjComment("Set respawn timer to 0 to damage a target.");
+        FunctionWriter.addObj("repspawnTimer");
+        FunctionWriter.addObjComment("Set game_stage global to 2 to damage players.");
+        FunctionWriter.addObj("global");
         FunctionWriter.addObj("range");
         FunctionWriter.addObj("damage");
         FunctionWriter.addObj("damage2");
@@ -376,49 +451,63 @@ class Implementer {
         FunctionWriter.addObj("kills");
         FunctionWriter.addObj("kills2");
         FunctionWriter.addObj("gunSneak", "minecraft.custom:minecraft.sneak_time");
-        FunctionWriter.addStatment("init_items", "scoreboard players set 100 dropoff 100");
-        FunctionWriter.addStatment("init_items", "scoreboard players set 10000 dropoff 10000");
-        FunctionWriter.addStatment("init_items", "team add green");
-        FunctionWriter.addStatment("init_items", "team add blue");
+
+        FunctionWriter.setLoc("init_items");
+        FunctionWriter.state("scoreboard players set 100 dropoff 100");
+        FunctionWriter.state("scoreboard players set 10000 dropoff 10000");
+        FunctionWriter.state("team remove green");
+        FunctionWriter.state("team remove blue");
+        FunctionWriter.state("team add green {\"color\":\"green\",\"text\":\"Creepers\"}");
+        FunctionWriter.state("team add blue {\"color\":\"aqua\",\"text\":\"Guardians\"}");
+        FunctionWriter.state("team modify green friendlyFire false");
+        FunctionWriter.state("team modify blue friendlyFire false");
+        FunctionWriter.state("team modify blue color blue");
+        FunctionWriter.state("team modify green color green");
 
 
     }
 
+    static void addShopItem(ShopItem si) {
 
-    private static void addShopItem(ShopItem si) {
 
+        FunctionWriter.setLoc("shop/" + si.getId());
 
-        FunctionWriter.makeFunction("shop/" + si.getId());
-        FunctionWriter.addStatment("shop/" + si.getId(), "tellraw @s[scores={credits=" + si.getCost() + "..}] [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Shop\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\": You have bought a\",\"color\":\"none\"},{\"text\":\" " + si.getName() + "\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"none\"}]");
-        FunctionWriter.addStatment("shop/" + si.getId(), "tellraw @s[scores={credits=.." + (si.getCost() - 1) + "}] [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Shop\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\": You cannot afford a\",\"color\":\"none\"},{\"text\":\" " + si.getName() + "\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"none\"}]");
         String[] lore = si.getLore();
         for (int i = 0; i < lore.length; i++)
             lore[i] = "\"\\\"" + lore[i] + "\\\"\"";
 
+        FunctionWriter.state( "tag @s[nbt={Inventory:[{tag:{" + si.getNbtNoBrackets() + "}}]}] add preowner");
+        FunctionWriter.state( "tellraw @s[tag=preowner] [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Shop\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\": You've already bought a \",\"color\":\"none\"},{\"text\":\"" + si.getName() + "\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"none\"}]");
+        FunctionWriter.state( "tellraw @s[tag=!preowner,scores={credits=" + si.getCost() + "..}] [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Shop\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\": You have bought a\",\"color\":\"none\"},{\"text\":\" " + si.getName() + "\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"none\"}]");
+        FunctionWriter.state( "tellraw @s[tag=!preowner,scores={credits=.." + (si.getCost() - 1) + "}] [\"\",{\"text\":\"[\",\"color\":\"green\"},{\"text\":\"Shop\",\"color\":\"none\"},{\"text\":\"]\",\"color\":\"green\"},{\"text\":\": You cannot afford a\",\"color\":\"none\"},{\"text\":\" " + si.getName() + "\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"none\"}]");
+
+
+        String armorNBTGreen = "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}";
+        String armorNBTBlue = "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}";
 
         if (si.getItemID().matches("[a-z_]+_helmet")) {
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=green] armor.head " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}");
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=blue] armor.head " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}");
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=green] armor.head " + si.getItemID() + armorNBTGreen);
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=blue] armor.head " + si.getItemID() + armorNBTBlue);
 
         } else if (si.getItemID().matches("[a-z_]+_chestplate")) {
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=green] armor.chest " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}");
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=blue] armor.chest " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}");
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=green] armor.chest " + si.getItemID() + armorNBTGreen);
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=blue] armor.chest " + si.getItemID() + armorNBTBlue);
 
         } else if (si.getItemID().matches("[a-z_]+_leggings")) {
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=green] armor.legs " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}");
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=blue] armor.legs " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}");
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=green] armor.legs " + si.getItemID() + armorNBTGreen);
+            FunctionWriter.state( "replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=blue] armor.legs " + si.getItemID() + armorNBTBlue);
 
         } else if (si.getItemID().matches("[a-z_]+_boots")) {
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=green] armor.feet " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}");
-            FunctionWriter.addStatment("shop/" + si.getId(), "replaceitem entity @s[scores={credits=" + si.getCost() + "..},team=blue] armor.feet " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}");
+            FunctionWriter.state("replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=green] armor.feet " + si.getItemID() + armorNBTGreen);
+            FunctionWriter.state("replaceitem entity @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=blue] armor.feet " + si.getItemID() + armorNBTBlue);
 
         } else {
-            FunctionWriter.addStatment("shop/" + si.getId(), "give @s[scores={credits=" + si.getCost() + "..},team=green] " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorGreen() != -1 ? "," + "color:" + si.getColorGreen() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtGreen().length() > 0 ? "," + si.getNbtGreen() : "") + "}");
-            FunctionWriter.addStatment("shop/" + si.getId(), "give @s[scores={credits=" + si.getCost() + "..},team=blue] " + si.getItemID() + "{display:{Name:\"\\\"" + si.getName() + "\\\"\",Lore:[" + String.join(",", lore) + "]" + (si.getColorBlue() != -1 ? "," + "color:" + si.getColorBlue() : "") + "}" + (si.getNbtNoBrackets().length() > 0 ? "," + si.getNbtNoBrackets() : "") + (si.getNbtBlue().length() > 0 ? "," + si.getNbtBlue() : "") + "}");
+            FunctionWriter.state("give @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=green] " + si.getItemID() + armorNBTGreen);
+            FunctionWriter.state("give @s[tag=!preowner,scores={credits=" + si.getCost() + "..},team=blue] " + si.getItemID() + armorNBTBlue);
         }
-        FunctionWriter.addStatment("shop/" + si.getId(), "scoreboard players remove @s[scores={credits=" + si.getCost() + "..}] credits " + si.getCost());
-        FunctionWriter.addStatment("shop/" + si.getId(), "playsound block.sweet_berry_bush.place player @s ~ ~ ~ 25");
-
+        FunctionWriter.state( "scoreboard players remove @s[tag=!preowner,scores={credits=" + si.getCost() + "..}] credits " + si.getCost());
+        FunctionWriter.state( "playsound block.sweet_berry_bush.place player @s ~ ~ ~ 25");
+        FunctionWriter.state( "tag @s remove preowner");
 
         FunctionWriter.addStatment("testing", "give @p oak_sign{BlockEntityTag:{Text1:\"{\\\"text\\\":\\\"[Buy]\\\",\\\"color\\\":\\\"green\\\",\\\"clickEvent\\\":{\\\"action\\\":\\\"run_command\\\",\\\"value\\\":\\\"trigger trigger set " + triggerCount + "\\\"}}\",Text2:\"[\\\"\\\",{\\\"text\\\":\\\"" + si.getName() + "\\\",\\\"color\\\":\\\"dark_red\\\"}]\",Text3:\"[\\\"\\\",{\\\"text\\\":\\\"Cost: \\\",\\\"color\\\":\\\"black\\\"},{\\\"text\\\":\\\"" + si.getCost() + "\\\",\\\"color\\\":\\\"dark_aqua\\\"}]\"},display:{Name:\"{\\\"text\\\":\\\"" + si.getName() + "\\\"}\"}}");
 
@@ -430,15 +519,18 @@ class Implementer {
     }
 
     static void addGun(CustomGun g) throws InvalidItemException {
-        FunctionWriter.addStatment("init_items", "scoreboard players set " + g.getId() + " armorPen " + (int) (g.getArmor_pen()));
+        FunctionWriter.addStatment("init_items", "scoreboard players set " + g.getId() + " armorPen " + (int) (g.getArmorPen()));
         FunctionWriter.addStatment("init_items", "scoreboard players set " + g.getId() + " dropoff " + (int) ((1 - (g.getDropoff() / 4)) * 10000));
         FunctionWriter.addStatment("init_items", "scoreboard players set " + g.getId() + " spray " + (int) g.getSpray());
 
 
-        if (g.getType().equals("shotgun")) {
+        if (g.getType().equals("shotgun") || g.getType().equals("firecracker")) {
             FunctionWriter.makeFunction("guns/initiate_" + g.getId());
             for (int i = 0; i < 5; i++)
                 FunctionWriter.addStatment("guns/initiate_" + g.getId(), "function flytre:guns/fire_" + g.getId());
+            if (g.getType().equals("firecracker"))
+                FunctionWriter.addStatment("guns/initiate_" + g.getId(), "scoreboard players set @s range 10000");
+
         }
 
 
@@ -484,67 +576,258 @@ class Implementer {
         }
 
         FunctionWriter.makeFunction("guns/beam_" + g.getId());
+
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "tag @s remove fired");
+
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "scoreboard players add @s travel_time 1");
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[scores={travel_time=4..}] run scoreboard players set @s travel_time 0");
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "scoreboard players add @s range 1");
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "scoreboard players operation @s damage *= " + g.getId() + " dropoff");
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "scoreboard players operation @s damage /= 10000 dropoff");
 
+        String damageFunc = "flytre:guns/damage_" + g.getId();
+        if (g.getType().equals("rocket"))
+            damageFunc = "flytre:guns/rocket_" + g.getId();
 
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] if entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator] add t_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] if entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator] add t_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] if entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function flytre:guns/damage_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] if entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function flytre:guns/damage_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=blue] if entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator] add t_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=green] if entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator] add t_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=blue,tag=!fired] if entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function " + damageFunc);
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=green,tag=!fired] if entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function " + damageFunc);
 
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator] add t_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator] add t_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function flytre:guns/damage_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function flytre:guns/damage_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=blue] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator] add t_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=green] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run tag @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator] add t_" + g.getId());
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=blue,tag=!fired] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!blue,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function " + damageFunc);
+        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute if score game_stage global matches 2 as @s[team=green,tag=!fired] positioned ~ ~-1 ~ if entity @a[distance=..0.7,limit=1,team=!green,gamemode=!spectator,scores={health=1..,respawnTimer=0}] run function " + damageFunc);
 
 
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue,scores={travel_time=0}] run particle minecraft:flame ~ ~ ~ 0 0 0 0 1 force");
         FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green,scores={travel_time=0}] run particle minecraft:happy_villager ~ ~ ~ 0 0 0 0 1 force");
 
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] unless entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
-        FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] unless entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
+        if (g.getType().equals("shocker")) {
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green,scores={travel_time=2}] run particle minecraft:block yellow_concrete ~ ~ ~ 0 0 0 0 1 force");
+
+        }
+
+        if (g.getType().equals("slime")) {
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] unless block ~ ~ ~ #flytre:shoot_through run particle minecraft:block ice ~ ~ ~ 0 0 0 0 10 force");
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] unless block ~ ~ ~ #flytre:shoot_through run particle minecraft:block slime_block ~ ~ ~ 0 0 0 0 10 force");
+        }
+        if (g.getType().equals("rocket")) {
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[tag=!fired] unless block ~ ~ ~ #flytre:shoot_through run function " + damageFunc);
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue,tag=!fired] unless entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green,tag=!fired] unless entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
 
 
+        } else {
+
+
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=blue] unless entity @a[distance=..0.6,limit=1,team=!blue,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
+            FunctionWriter.addStatment("guns/beam_" + g.getId(), "execute as @s[team=green] unless entity @a[distance=..0.6,limit=1,team=!green,gamemode=!spectator] if score @s range matches .." + (g.getRange() * 4) + " if block ~ ~ ~ #flytre:shoot_through positioned ^ ^ ^0.25 run function " + "flytre:guns/beam_" + g.getId());
+        }
+
+
+        if (g.getType().equals("rocket")) {
+            FunctionWriter.makeFunction("guns/rocket_" + g.getId());
+            FunctionWriter.addStatment("guns/rocket_" + g.getId(), "tag @s add fired");
+            FunctionWriter.addStatment("guns/rocket_" + g.getId(), "execute as @s[team=green] run function flytre:guns/rocket_" + g.getId() + "_green");
+            FunctionWriter.addStatment("guns/rocket_" + g.getId(), "execute as @s[team=blue] run function flytre:guns/rocket_" + g.getId() + "_blue");
+            for (String s : new String[]{"blue", "green"}) {
+                String name = "guns/rocket_" + g.getId() + "_" + s;
+                FunctionWriter.makeFunction(name);
+                FunctionWriter.addStatment(name, "particle minecraft:explosion ~ ~ ~ 0 0 0 0 10 force");
+                FunctionWriter.addStatment(name, "effect give @a[gamemode=!spectator,team=!" + s + ",distance=..4] instant_damage 1 0 true");
+                FunctionWriter.addStatment(name, "scoreboard players remove @a[gamemode=!spectator,team=!" + s + ",distance=..4] health 100");
+                FunctionWriter.addStatment(name, "scoreboard players remove @a[gamemode=!spectator,team=!" + s + ",distance=..3] health 100");
+                FunctionWriter.addStatment(name, "scoreboard players remove @a[gamemode=!spectator,team=!" + s + ",distance=..2] health 300");
+                FunctionWriter.addStatment(name, "scoreboard players remove @a[gamemode=!spectator,team=!" + s + ",distance=..1] health 500");
+
+
+                FunctionWriter.addStatment(name, "execute if entity @a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death,tag=!quadKill] run tellraw @a [\"\",{\"selector\":\"@a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death,tag=!quadKill]\",\"color\":\"yellow\"},{\"text\":\" was tagged by \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+                FunctionWriter.addStatment(name, "execute if entity @a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death] run scoreboard players add @s kills 1");
+                FunctionWriter.addStatment(name, "execute if entity @a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death] run scoreboard players add @s kills2 1");
+                FunctionWriter.addStatment(name, "execute if entity @a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death,tag=quadKill] run tellraw @a [\"\",{\"selector\":\"@a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death,tag=quadKill]\",\"color\":\"yellow\"},{\"text\":\" lost their streak to \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+                FunctionWriter.addStatment(name, "execute if entity @a[scores={health=..0},distance=..4,gamemode=!spectator,team=!" + s + ",tag=!gun_death,tag=quadKill] run tag @s remove quadKill");
+                FunctionWriter.addStatment(name, "tag @a[scores={health=..0},distance=..4,tag=!gun_death,gamemode=!spectator,team=!" + s + "] add gun_death");
+
+                FunctionWriter.addStatment(name, "tag @a[distance=..0.7,tag=t_" + g.getId() + "] remove t_" + g.getId() + "");
+
+            }
+
+        }
         FunctionWriter.makeFunction("guns/damage_" + g.getId());
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players set @a[distance=..0.7,tag=t_" + g.getId() + "] armor2 100");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "effect give @a[distance=..0.7,tag=t_" + g.getId() + "] instant_damage 1 0 true");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[distance=..0.7,tag=t_" + g.getId() + "] add shot");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @a[distance=..0.7,tag=t_" + g.getId() + "] armor2 -= " + g.getId() + " armorPen");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] run scoreboard players operation @s armor2 *= @s armor");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] run scoreboard players operation @s armor2 /= 100 dropoff");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players set @s damage2 100");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players add @s range 1000000");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage2 -= @a[distance=..0.7,tag=t_" + g.getId() + "] armor2");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage *= @s damage2");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage /= 100 dropoff");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @a[distance=..0.7,tag=t_" + g.getId() + "] health -= @s damage");
+        if (g.getType().equals("slime")) {
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @s[team=blue] run particle minecraft:block ice ~ ~ ~ 0 0 0 0 10 force");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @s[team=green] run particle minecraft:block slime_block ~ ~ ~ 0 0 0 0 10 force");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "effect give @a[distance=..0.7,tag=t_" + g.getId() + "] slowness 1 2 true");
+        }
+        if (!g.getType().equals("shocker")) {
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players set @a[distance=..0.7,tag=t_" + g.getId() + "] armor2 100");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "effect give @a[distance=..0.7,tag=t_" + g.getId() + "] instant_damage 1 0 true");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[distance=..0.7,tag=t_" + g.getId() + "] add shot");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @a[distance=..0.7,tag=t_" + g.getId() + "] armor2 -= " + g.getId() + " armorPen");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] run scoreboard players operation @s armor2 *= @s armor");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] run scoreboard players operation @s armor2 /= 100 dropoff");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players set @s damage2 100");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players add @s range 1000000");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage2 -= @a[distance=..0.7,tag=t_" + g.getId() + "] armor2");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage *= @s damage2");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @s damage /= 100 dropoff");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "scoreboard players operation @a[distance=..0.7,tag=t_" + g.getId() + "] health -= @s damage");
 
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] at @s run playsound flytre.hit player @a[distance=..10] ~ ~ ~");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + "] at @s run playsound flytre.hit player @a[distance=..10] ~ ~ ~");
 
 
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=!quadKill] run tellraw @a [\"\",{\"selector\":\"@p[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + "]\",\"color\":\"yellow\"},{\"text\":\" was tagged by \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] run scoreboard players add @s kills 1");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] run scoreboard players add @s kills2 1");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=quadKill] run tellraw @a [\"\",{\"selector\":\"@p[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + "]\",\"color\":\"yellow\"},{\"text\":\" lost their streak to \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=quadKill] run tag @s remove quadKill");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=!quadKill] run tellraw @a [\"\",{\"selector\":\"@p[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + "]\",\"color\":\"yellow\"},{\"text\":\" was tagged by \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] run scoreboard players add @s kills 1");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] run scoreboard players add @s kills2 1");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=quadKill] run tellraw @a [\"\",{\"selector\":\"@p[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + "]\",\"color\":\"yellow\"},{\"text\":\" lost their streak to \",\"color\":\"yellow\"},{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute if entity @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death,tag=quadKill] run tag @s remove quadKill");
+
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] add gun_death");
+
+        }
+        if (g.getType().equals("shocker")) {
+            FunctionWriter.addStatment("init_items", "scoreboard players set 80 damage 80");
+            FunctionWriter.addStatment("init_items", "scoreboard players set 100 damage 100");
+            /*
+            Shock algorithm
+            1. remove all shock tags
+            2. tag first player with shock
+            3. at the shocked player run shock particles
+            4. deal damage and tag the first player with shocked and remove shock
+            5. at a random player unshocked within 5 blocks tag it with shock
+            6. draw a line from the current player to the new yet-to-be shocked player
+            7. repeat 2 thru 6
 
 
-        FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[scores={health=..0},distance=..0.7,tag=t_" + g.getId() + ",tag=!gun_death] add gun_death");
+            how to do damage?
+            -test for hp < 0 and
+             */
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a remove shocked");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a remove shock");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a remove initial_shocker");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @s add initial_shocker");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[distance=..0.7,tag=t_" + g.getId() + ",limit=1] add shocked");
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute as @a[distance=..0.7,tag=t_" + g.getId() + ",limit=1] at @s run function flytre:guns/shock_" + g.getId());
+
+            FunctionWriter.makeFunction("guns/shock_" + g.getId());
+            FunctionWriter.makeFunction("guns/shock_line_" + g.getId());
+
+
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute at @s run playsound minecraft:flytre.shocker.hit player @a[distance=..7] ~ ~ ~");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "tag @s add shocking");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute at @s run function flytre:particles/shocker");
+
+
+            FunctionWriter.addStatment("guns/shock_line_" + g.getId(), "particle block yellow_concrete ~ ~ ~ 0 0 0 0 1 force");
+            FunctionWriter.addStatment("guns/shock_line_" + g.getId(), "execute positioned ~ ~-1 ~ unless entity @a[tag=shocking,distance=..0.7] positioned ~ ~1 ~ positioned ^ ^ ^0.25 run function flytre:guns/shock_line_" + g.getId());
+
+
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage *= 80");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage /= 100");
+
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players set @s armor2 100");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "tag @s add shot");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @s armor2 -= " + g.getId() + " armorPen");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @s armor2 *= @s armor");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @s armor2 /= 100 dropoff");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players set @a[tag=initial_shocker] damage2 100");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players add @a[tag=initial_shocker] range 1000000");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage2 -= @s armor2");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage *= @a[tag=initial_shocker] damage2");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage /= 100 dropoff");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @s health -= @a[tag=initial_shocker] damage");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "effect give @s instant_damage 1 0 true");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage *= 80 damage");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "scoreboard players operation @a[tag=initial_shocker] damage /= 100 damage");
+
+
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute if entity @s[scores={health=..0},tag=shocking,tag=!gun_death,tag=!quadKill] run tellraw @a [\"\",{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\" was tagged by \",\"color\":\"yellow\"},{\"selector\":\"@a[tag=initial_shocker]\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute if entity @s[scores={health=..0},tag=shocking,tag=!gun_death] run scoreboard players add @a[tag=initial_shocker] kills 1");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute if entity @s[scores={health=..0},tag=shocking,tag=!gun_death] run scoreboard players add @a[tag=initial_shocker] kills2 1");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute if entity @s[scores={health=..0},tag=shocking,tag=!gun_death,tag=quadKill] run tellraw @a [\"\",{\"selector\":\"@s\",\"color\":\"yellow\"},{\"text\":\" lost their streak to \",\"color\":\"yellow\"},{\"selector\":\"@a[tag=initial_shocker]\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"}]");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute as @a[scores={health=..0},tag=shocking,tag=!gun_death,tag=quadKill] run tag @s remove quadKill");
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute as @a[scores={health=..0},tag=shocking,tag=!gun_death] run tag @s add gun_death");
+
+            FunctionWriter.addStatment("guns/shock_" + g.getId(), "execute as @a[tag=shocking] run function flytre:guns/shock2_" + g.getId());
+            FunctionWriter.makeFunction("guns/shock2_" + g.getId());
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "tag @s add shocked");
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "tag @s remove shocking");
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "execute as @a[tag=initial_shocker,team=blue] run tag @r[distance=..5,tag=!shocked,team=!blue,gamemode=!spectator] add shocking");
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "execute as @a[tag=initial_shocker,team=green] run tag @r[distance=..5,tag=!shocked,team=!green,gamemode=!spectator] add shocking");
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "execute as @s positioned ~ ~1 ~ if entity @a[tag=shocking,limit=1] facing entity @a[tag=shocking,distance=..5,limit=1] eyes run function flytre:guns/shock_line_" + g.getId());
+            FunctionWriter.addStatment("guns/shock2_" + g.getId(), "execute as @s at @s as @p[tag=shocking] at @s run function flytre:guns/shock_" + g.getId()); //recurse if entity to shock to
+
+
+            addParticle(new ParticleHelix("shocker", 0.5, "block yellow_concrete", 4, 2));
+        }
+
 
         FunctionWriter.addStatment("guns/damage_" + g.getId(), "tag @a[distance=..0.7,tag=t_" + g.getId() + "] remove t_" + g.getId() + "");
+
+
+        if (g.getType().equals("firecracker"))
+            FunctionWriter.addStatment("guns/damage_" + g.getId(), "execute positioned ^ ^ ^2 run function flytre:guns/initiate_" + g.getId());
+
         FunctionWriter.addStatment("guns/damage_" + g.getId(), "function flytre:sync_xp");
 
-        String[] lore = null;
+
+        ArrayList<String> lore2 = new ArrayList();
         if (g.getType().equals("shotgun"))
-            lore = new String[]{"§7Damage: §c" + (int) g.getDamage(), "§7Speed: §c" + g.getRps(), "§7Range: §c" + (int) g.getRange(), "§7Spray: §c" + (int) g.getSpray(), "§7Armor Pierce: §c" + (int) g.getArmor_pen() + "%", "§7Dropoff: §c" + g.getDropoff(), "§7Projectiles: §c5"};
-        else if (g.getType().equals("sniper"))
-            lore = new String[]{"§7Damage: §c" + (int) g.getDamage(), "§7Speed: §c" + g.getRps(), "§7Range: §c" + (int) g.getRange(), "§7Spray: §c" + (int) g.getSpray(), "§7Armor Pierce: §c" + (int) g.getArmor_pen() + "%", "§7Dropoff: §c" + g.getDropoff(), "§7Movement Speed: §c-10%"};
+            lore2.add("§7§oShoots multiple laser at a time.");
+        if (g.getType().equals("shocker")) {
+            lore2.add("§7§oArcing lasers hit additional");
+            lore2.add("§7§onearby enemies.");
+        }
+        if (g.getType().equals("slime"))
+            lore2.add("§7§oLasers carry sticky slime.");
+        if (g.getType().equals("rocket")) {
+            lore2.add("§7§oExplosive laser can hit");
+            lore2.add("§7§omultiple enemies at once.");
+        }
+        if (g.getType().equals("firecracker"))
+            lore2.add("§7§oLasers spray out from hit enemies.");
+
+        if (!g.getType().equals("rocket"))
+            lore2.add("§7Damage: §c" + (int) (g.getDamage() * 100));
         else
-            lore = new String[]{"§7Damage: §c" + (int) g.getDamage(), "§7Speed: §c" + g.getRps(), "§7Range: §c" + (int) g.getRange(), "§7Spray: §c" + (int) g.getSpray(), "§7Armor Pierce: §c" + (int) g.getArmor_pen() + "%", "§7Dropoff: §c" + g.getDropoff()};
+            lore2.add("§7Damage: §c100-1200");
+
+        int fireSpeed = (20 / (int) (20 / g.getRps()));
+        if (fireSpeed == 0)
+            lore2.add("§7Fire Speed: §c" + ((int) (g.getRps() * 100)) / 100.0 + " lasers/sec");
+        else
+            lore2.add("§7Fire Speed: §c" + (20 / (int) (20 / g.getRps())) + " lasers/sec");
+
+        lore2.add("§7Range: §c" + g.getRange() + "m");
+
+        if (g.getSpray() > 0)
+            lore2.add("§7Spray: §c" + (int) g.getSpray() + "°");
+        if (g.getArmorPen() > 0)
+            lore2.add("§7Armor Pierce: §c" + (int) g.getArmorPen() + "%");
+        if (g.getDropoff() > 0)
+            lore2.add("§7Dropoff: §c" + (g.getDropoff() * 100) + " % per m");
+        if (g.getType().equals("sniper"))
+            lore2.add("§7Movement Speed: §c-10%");
+        if (g.getType().equals("minigun"))
+            lore2.add("§7Movement Speed: §c-40%");
+        if (g.getType().equals("shotgun"))
+            lore2.add("§7Lasers: §c5");
+        if (g.getType().equals("firecracker"))
+            lore2.add("§7Impact Lasers: §c5");
+        if (g.getType().equals("slime"))
+            lore2.add("§7Slow: §c45%");
+        if (g.getType().equals("shocker"))
+            lore2.add("§7Arc distance: §c5");
+        if (g.getClipSize() > 1) {
+            lore2.add("§7Battery Power: §c" + g.getClipSize() + " lasers");
+            lore2.add("§7Charging Time: §c" + ((int) (g.getReloadTime() * 100)) / 100.0 + " sec" + (g.getReloadTime() == 1 ? "" : "s"));
+        }
+
+        String[] lore = new String[lore2.size()];
+        for (int i = 0; i < lore2.size(); i++)
+            lore[i] = lore2.get(i);
+
 
         int model = 0;
         if (g.getType().equals("pistol"))
@@ -555,10 +838,22 @@ class Implementer {
             model = 5;
         if (g.getType().equals("shotgun"))
             model = 12;
+        if (g.getType().equals("slime"))
+            model = 17;
+        if (g.getType().equals("rocket"))
+            model = 19;
+        if (g.getType().equals("shocker"))
+            model = 21;
+        if (g.getType().equals("minigun"))
+            model = 23;
+        if (g.getType().equals("firecracker"))
+            model = 25;
 
         ShopItem si = null;
         if (g.getType().equals("sniper"))
-            si = new ShopItem(g.getId(), "carrot_on_a_stick", g.getName(), lore, g.getCost(), "ability:\"" + g.getId() + "\",scope:1,HideFlags:63,AttributeModifiers:[{AttributeName:\"generic.movementSpeed\",Name:\"generic.movementSpeed\",Amount:-0.1,Operation:1,UUIDLeast:"+(int)(Math.random()*100000)+",UUIDMost:"+(int)((Math.random()*100000)+100000)+",Slot:\"mainhand\"}]");
+            si = new ShopItem(g.getId(), "carrot_on_a_stick", g.getName(), lore, g.getCost(), "ability:\"" + g.getId() + "\",scope:1,HideFlags:63,AttributeModifiers:[{AttributeName:\"generic.movementSpeed\",Name:\"generic.movementSpeed\",Amount:-0.1,Operation:1,UUIDLeast:" + (int) (Math.random() * 100000) + ",UUIDMost:" + (int) ((Math.random() * 100000) + 100000) + ",Slot:\"mainhand\"}]");
+        else if (g.getType().equals("minigun"))
+            si = new ShopItem(g.getId(), "carrot_on_a_stick", g.getName(), lore, g.getCost(), "ability:\"" + g.getId() + "\",HideFlags:63,AttributeModifiers:[{AttributeName:\"generic.movementSpeed\",Name:\"generic.movementSpeed\",Amount:-0.4,Operation:1,UUIDLeast:" + (int) (Math.random() * 100000) + ",UUIDMost:" + (int) ((Math.random() * 100000) + 100000) + ",Slot:\"mainhand\"}]");
         else
             si = new ShopItem(g.getId(), "carrot_on_a_stick", g.getName(), lore, g.getCost(), "ability:\"" + g.getId() + "\",scope:1");
 
@@ -569,164 +864,21 @@ class Implementer {
 
 
         CustomAbility cag = null;
+
+
+        int cooldown = (int) (20 / g.getRps());
+        if (g.getRps() >= 20)
+            cooldown = 0;
+
         if (!g.getType().equals("shotgun"))
-            cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/fire_" + g.getId()).cooldown((int) (20 / g.getRps())).build();
+            cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/fire_" + g.getId()).cooldown(cooldown).charges(g.getClipSize()).reloadTime((int) (g.getReloadTime() * 20)).build();
         else
-            cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/initiate_" + g.getId()).cooldown((int) (20 / g.getRps())).build();
-        addAbility(cag,si);
+            cag = new CustomAbility.Builder(g.getId()).effect("function flytre:guns/initiate_" + g.getId()).cooldown(cooldown).charges(g.getClipSize()).reloadTime((int) (g.getReloadTime() * 20)).build();
+        addAbility(cag, si, g);
     }
 
     static void postInitializeGun() {
     }
 
 
-    public static void main(String[] args) throws InvalidItemException {
-
-
-        initialize();
-
-        ParticleShape respawn = new ParticleHelix("helix", 2, "smoke", 3, 2);
-        addParticle(respawn);
-
-        FunctionWriter.addObj("health");
-        FunctionWriter.addObj("rng");
-        FunctionWriter.addObj("trigger", "trigger");
-        FunctionWriter.addStatment("init_items", "team add green");
-        FunctionWriter.addStatment("init_items", "team add blue");
-        FunctionWriter.addStatment("init_items", "team modify green color green");
-        FunctionWriter.addStatment("init_items", "team modify blue color blue");
-        FunctionWriter.addStatment("init_items", "team modify green friendlyFire false");
-        FunctionWriter.addStatment("init_items", "team modify blue friendlyFire false");
-
-        FunctionWriter.makeFunction("shop_base");
-        FunctionWriter.addStatment("shop_base", "scoreboard players enable @a trigger");
-        FunctionWriter.makeFunction("testing");
-        FunctionWriter.addStatment("generic_base", "function flytre:shop_base");
-
-
-
-        initializeGun();
-        initializeAbility();
-
-
-
-        //shop
-        ShopItem saber_1 = new ShopItem("saber_1", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c7", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 25, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:13,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
-        saber_1.setNbtGreen("CustomModelData:7");
-        saber_1.setNbtBlue("CustomModelData:8");
-
-        ShopItem saber_2 = new ShopItem("saber_2", "carrot_on_a_stick", "§rSaber", new String[]{"§7Damage: §c10", "§7Speed: §c1.5", "§7Armor Pierce: §c100%", "§7Health Regen: §c+10 §7hp/sec"}, 55, "HideFlags:63,Unbreakable:1b,AttributeModifiers:[{AttributeName:\"generic.attackDamage\",Name:\"generic.attackDamage\",Amount:20,Operation:0,UUIDLeast:182591,UUIDMost:608443,Slot:\"mainhand\"},{AttributeName:\"generic.attackSpeed\",Name:\"generic.attackSpeed\",Amount:-2.5,Operation:0,UUIDLeast:824699,UUIDMost:990954,Slot:\"mainhand\"}],type:\"saber\"");
-        saber_2.setNbtGreen("CustomModelData:7");
-        saber_2.setNbtBlue("CustomModelData:8");
-
-        addShopItem(saber_1);
-        addShopItem(saber_2);
-        ShopItem toughened_vest = new ShopItem("toughened_vest", "leather_chestplate", "§rToughened Vest", new String[]{"§7Armor: §c20%"}, 10, "armor:20,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        toughened_vest.setColorBlue(262348);
-        toughened_vest.setColorGreen(4325135);
-        addShopItem(toughened_vest);
-
-        ShopItem combat_vest = new ShopItem("combat_vest", "leather_chestplate", "§rCombat Vest", new String[]{"§7Armor: §c40%"}, 30, "armor:40,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_vest.setColorBlue(262348);
-        combat_vest.setColorGreen(4325135);
-        addShopItem(combat_vest);
-
-        ShopItem toughened_legs = new ShopItem("toughened_legs", "leather_leggings", "§rToughened Pants", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        toughened_legs.setColorBlue(262348);
-        toughened_legs.setColorGreen(4325135);
-        addShopItem(toughened_legs);
-
-        ShopItem combat_legs = new ShopItem("combat_legs", "leather_leggings", "§rCombat Pants", new String[]{"§7Armor: §c30%"}, 25, "armor:30,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_legs.setColorBlue(262348);
-        combat_legs.setColorGreen(4325135);
-        addShopItem(combat_legs);
-
-        ShopItem trooper_boots = new ShopItem("trooper_boots", "leather_boots", "§rTrooper Boots", new String[]{"§7Armor: §c15%"}, 10, "armor:15,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        trooper_boots.setColorBlue(262348);
-        trooper_boots.setColorGreen(4325135);
-        addShopItem(trooper_boots);
-
-        ShopItem combat_boots = new ShopItem("combat_boots", "leather_boots", "§rCombat Boots", new String[]{"§7Armor: §c25%"}, 20, "armor:25,HideFlags:63,AttributeModifiers:[],Enchantments:[{id:\"minecraft:binding_curse\",lvl:1}],Unbreakable:1b");
-        combat_boots.setColorBlue(262348);
-        combat_boots.setColorGreen(4325135);
-        addShopItem(combat_boots);
-
-        ShopItem dasher = new ShopItem("dash", "carrot_on_a_stick", "§eDash", new String[]{"§7Gain Speed §62§7 for §65§7 seconds.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"dash\",CustomModelData:9");
-        addShopItem(dasher);
-
-        ShopItem blinker = new ShopItem("blink", "carrot_on_a_stick", "§eBlink", new String[]{"§7Teleport up to §68§7 blocks forward.", "§7Aim slightly upwards for better results.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"blink\",CustomModelData:10");
-        addShopItem(blinker);
-
-        ShopItem weakheal = new ShopItem("weak_heal", "carrot_on_a_stick", "§eWeak Heal", new String[]{"§7Heal §63.0§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 15, "ability:\"weak_heal\",CustomModelData:11");
-        addShopItem(weakheal);
-
-        ShopItem strongheal = new ShopItem("strong_heal", "carrot_on_a_stick", "§eStrong Heal", new String[]{"§7Heal §66.0§7 hearts.", "§7The same ability does §cNOT§7 stack."}, 25, "ability:\"strong_heal\",CustomModelData:11");
-        addShopItem(strongheal);
-
-        CustomGun shotty = new CustomGun("shotty", 7, 50, 1, 0.09, 18, 8, "flytre.shotgun.fire", "§6Omega §rShowstopper", 65, "shotgun");
-        addGun(shotty);
-
-        ShopItem concussion = new ShopItem("team_heal", "carrot_on_a_stick", "§eTeam Heal", new String[]{"§7Heal your team for §61.5§7 hearts.", "§7The same ability does §cNOT§7 stack for the same person."}, 25, "ability:\"team_heal\",CustomModelData:16");
-        addShopItem(concussion);
-
-        ShopItem spectraleye = new ShopItem("spectral_eye", "carrot_on_a_stick", "§eSpectral Eye", new String[]{"§7Reveal players within §612§7 blocks.", "§7The same ability does §cNOT§7 stack."}, 20, "ability:\"spectral_eye\",CustomModelData:15");
-        addShopItem(spectraleye);
-
-
-        CustomGun soft_sniper = new CustomGun("soft_sniper", 13, 70, 0.4, 0.0, 2, 50, "flytre.sniper.fire", "§6SpaceTech §rSeeker", 55, "sniper");
-        CustomGun hard_sniper = new CustomGun("hard_sniper", 22, 95, 0.18, 0.0, 0, 50, "flytre.sniper.fire", "§6FlyteForce §rNightmare", 95, "sniper");
-
-        CustomGun pistol_1 = new CustomGun("pistol_1", 5, 20, 3, 0.06, 12, 30, "flytre.pistol.fire", "§6Nova §rLethalMark", 25, "pistol");
-        CustomGun pistol_2 = new CustomGun("pistol_2", 8, 40, 2, 0.06, 10, 20, "flytre.pistol.fire", "§6Nova §rBeamer", 30, "pistol");
-        CustomGun pistol_3 = new CustomGun("pistol_3", 6, 10, 4, 0.08, 21, 15, "flytre.pistol.fire", "§6Omega §rLaserSpeed", 30, "pistol");
-
-        CustomGun smg = new CustomGun("smg", 4, 40, 8, 0.07, 20, 12, "flytre.assault_rifle.fire", "§6FlyteForce §rRapidStrike", 70, "smg");
-
-        CustomGun ar_1 = new CustomGun("ar_1", 6, 50, 6, 0.04, 15, 20, "flytre.assault_rifle.fire", "§6SpaceTech §rHunter", 70, "rifle");
-        CustomGun ar_2 = new CustomGun("ar_2", 5, 70, 4, 0.01, 10, 25, "flytre.assault_rifle.fire", "§6Omega §rBlaster", 50, "rifle");
-
-        addGun(soft_sniper);
-        addGun(hard_sniper);
-        addGun(pistol_1);
-        addGun(pistol_2);
-        addGun(pistol_3);
-        addGun(smg);
-        addGun(ar_1);
-        addGun(ar_2);
-
-
-        //particles
-        addParticle(new ParticleTriangle("heal_1", "heart", 3));
-        addParticle(new ParticleCircle("heal_2", 3, "heart", 10));
-        addParticle(new ParticleTriPyramid("spectral_eye", "dripping_water", 2, 3));
-
-
-        //abilities
-        CustomAbility dash = new CustomAbility.Builder("dash").message("You have used dash!").cooldown(300).displayName("§eDash").effect("effect give @s speed 6 1 true").overTimeDuration(100).overTimeEffect("particle minecraft:cloud ~ ~-.1 ~0 0 .05 0 0 8 force").sound("block.beacon.activate").build();
-
-        CustomAbility blink = new CustomAbility.Builder("blink").message("You have blinked!").cooldown(400).displayName("§eBlink").effect("function flytre:abilities/blink_effect").sound("entity.enderman.teleport").build();
-
-        CustomAbility weak_heal = new CustomAbility.Builder("weak_heal").message("You have healed!").cooldown(350).displayName("§eWeak Heal").effect(new String[]{"execute rotated 180 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_2", "scoreboard players set @s[scores={health=1400..}] health 2000", "scoreboard players add @s[scores={health=..1399}] health 600"}).sound("flytre.powerup.1").build();
-        CustomAbility strong_heal = new CustomAbility.Builder("strong_heal").message("You have healed!").cooldown(400).displayName("§eStrong Heal").effect(new String[]{"execute rotated 180 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_2", "scoreboard players set @s[scores={health=800..}] health 2000", "scoreboard players add @s[scores={health=..799}] health 1200"}).sound("flytre.powerup.1").build();
-
-        CustomAbility team_heal = new CustomAbility.Builder("team_heal").message("You have healed your team!").cooldown(450).displayName("§eTeam Heal").effect(new String[]{"execute rotated 180 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_1", "execute rotated 0 0 run function flytre:particles/heal_2", "execute as @a[team=green] run scoreboard players set @s[team=green,scores={health=1600..}] health 2000", "execute as @s[team=green] run scoreboard players add @a[team=green,scores={health=..1599}] health 400", "execute as @a[team=blue] run scoreboard players set @s[team=blue,scores={health=1600..}] health 2000", "execute as @s[team=blue] run scoreboard players add @a[team=blue,scores={health=..1599}] health 400"}).sound("flytre.powerup.1").build();
-        CustomAbility spectral = new CustomAbility.Builder("spectral_eye").message("Your spectral eye has activated, revealing nearby enemies!").cooldown(500).displayName("§eSpectral Eye").effect(new String[]{"execute rotated ~ 0 run function flytre:particles/spectral_eye", "execute as @s[team=blue] run effect give @a[team=green,distance=..18] glowing 5 0 true", "execute as @s[team=green] run effect give @a[team=blue,distance=..18] glowing 5 0 true"}).sound("flytre.powerup.2").build();
-
-
-        addAbility(weak_heal, weakheal);
-        addAbility(strong_heal, strongheal);
-        addAbility(dash, dasher);
-        addAbility(blink, blinker);
-        addAbility(team_heal, concussion);
-        addAbility(spectral, spectraleye);
-
-
-
-
-        postInitializeAbility();
-        postInitializeGun();
-
-        FunctionWriter.addStatment("shop_base", "scoreboard players set @a trigger 0");
-
-    }
 }

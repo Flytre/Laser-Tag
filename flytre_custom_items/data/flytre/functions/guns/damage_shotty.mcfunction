@@ -1,7 +1,7 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/23/2019 09:23
+#Created: 02/01/2020 17:56
 ####################################################################################################
 
 scoreboard players set @a[distance=..0.7,tag=t_shotty] armor2 100

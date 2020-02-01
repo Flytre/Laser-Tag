@@ -166,4 +166,49 @@ Kill the other team to get points!
 
 Are you ready?
 
+
+Phase 9:
 136. Bossbar bug
+137. Right click for item preview? ~ Postpone
+138. Scoping release not instant ~ Cannot be faster
+D. Increase credit max 120 -> 130
+140. One way attack in shop ~ Unconfirmed
+141. Jump down from launchpad
+D. Moving before game start
+D. Showstopper
+D. Blink range
+D. Indicator game has not started
+
+Patch 9.1:
+D. The map selector does not appear to work correctly. Unable to load the third map. The map "Globe" is being loaded even though Laboratory is selected(?)
+D.  Item names when triggered should be spelled the same. For example, when the item "Spectral Eye" is used, a text says "Your spectral eye has activated, revealing nearby enemies!". "spectral eye" should say "Spectral Eye".
+D. "Font not loading?" trigger does not work.
+D. The game appears to break if a player disconnects and reconnects once they are in the load-out selection lobby. The players get teleported to the arena but it does not start.
+150. Players may want the option to change some game settings as they desire (Tags required to win for example).
+151. Players cannot cancel nor change the map once they have entered the load-out lobby.
+D. If a player dies in the load-out lobby, they respawn at the start and they are unable to access the area again. (This forces players to reload the map to resolve the issue)
+
+Phase 10:
+D. Dual Wield abilities and pistols
+D. Change shape of heal effect
+D. Global accuracy increase
+D. Nerfed the Hunter and pistol 3
+D. Tag stats after game ends
+D. Yet another dropped item checks
+D. Prevent buying duplicates
+D. Removed bobbing on gun reload
+D. Glowing now applies for melee kills too
+
+Phase 11:
+D. Lasers weapons now have rechargable batteries
+D. Omega Blaster nerfed, pistols worked
+D. Weapon stats UI for laser weapons reworked
+D. Patched bug causing obnoxious sounds when duel wielding
+D. Sabers heal more
+166.
+
+Phase 12:
+3 round burst blaster
+freeze blaster
+explosive weapon
+Assault mode / zombie AI

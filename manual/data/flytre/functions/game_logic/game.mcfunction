@@ -53,6 +53,7 @@ execute as @a[scores={otherDamage=1..},tag=!shot2] run scoreboard players operat
 
 
 #make sure players rejoining thee game are set up
+execute as @a at @s unless entity @e[tag=map_center,sort=nearest,distance=..100] run scoreboard players set @s rejoin 1
 scoreboard players set @a[x=-143,y=16,z=-65,dx=-5,dy=1,dz=3] rejoin 1
 execute as @a[scores={rejoin=1..},team=] run tp @s @e[tag=map_center,sort=nearest,limit=1]
 execute as @a[scores={rejoin=1..},team=] run effect clear @s
@@ -87,18 +88,13 @@ execute as @a[scores={health=..0},team=green] if score playing global matches 10
 execute as @a[scores={health=..0},team=blue] if score playing global matches 10.. run scoreboard players add green_score global 150
 
 #reset ability cooldowns on death
+execute as @a[scores={health=..0}] run function flytre:reset_abilities
 scoreboard players set @a[scores={health=..0}] kills2 0
-scoreboard players set @a[scores={health=..0}] dash_cd 0
-scoreboard players set @a[scores={health=..0}] blink_cd 0
-scoreboard players set @a[scores={health=..0}] weak_heal_cd 0
-scoreboard players set @a[scores={health=..0}] strong_heal_cd 0
-scoreboard players set @a[scores={health=..0}] team_heal_cd 0
-scoreboard players set @a[scores={health=..0}] spectral_eye_cd 0
 effect clear @a[scores={health=..0}] glowing
 
-#Quad kill messages for melee (phaser is handled by generator)
-execute as @a[scores={kills2=4..},tag=!quadKill] at @s run tellraw @a ["",{"text":"[","color":"green"},{"text":"Game","color":"none"},{"text":"]","color":"green"},{"text":":","color":"none"}, {"selector":"@a[scores={kills2=4..},tag=!quadKill,limit=1,sort=nearest]"}, {"text":" has gotten 4 ranged kills without dying! Their location is now revealed.","color":"gold"}]
-effect give @a[scores={kills2=4..},tag=!quadKill] glowing 100 0 true
+#Quad kill messages for phaser
+execute as @a[scores={kills2=4..},tag=!quadKill] at @s run tellraw @a ["",{"text":"[","color":"green"},{"text":"Game","color":"none"},{"text":"]","color":"green"},{"text":": ","color":"none"}, {"selector":"@a[scores={kills2=4..},tag=!quadKill,limit=1,sort=nearest]"}, {"text":" has gotten four kills without dying! Their location is now revealed.","color":"gold"}]
+effect give @a[scores={kills2=4..},tag=!quadKill] glowing 1000 0 true
 tag @a[scores={kills2=4..},tag=!quadKill] add quadKill
 
 #saber sound effects
@@ -111,8 +107,9 @@ execute as @a[scores={dd=0..},nbt={SelectedItem:{tag:{type:"saber"}}}] at @s if 
 #detect melee / streak deaths
 execute as @a[scores={health=..0,otherDamage=0},tag=!gun_death,tag=!quadKill] unless entity @a[scores={dd=0..},distance=..5] run tellraw @a ["",{"selector":"@s","color":"yellow"},{"text":" died.","color":"yellow"}]
 execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death,tag=quadKill] at @s if entity @a[scores={dd=0..},distance=..5] run tellraw @a ["",{"selector":"@s","color":"yellow"},{"text":" lost their streak to ","color":"yellow"},{"selector":"@a[scores={dd=0..},distance=..5,limit=1]","color":"yellow"},{"text":".","color":"yellow"}]
-execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death,tag=!quadKill] at @s if entity @a[scores={dd=0..},distance=..5] run tellraw @a ["",{"selector":"@s","color":"yellow"},{"text":" was melee'd by ","color":"yellow"},{"selector":"@a[scores={dd=0..},distance=..5,limit=1]","color":"yellow"},{"text":".","color":"yellow"}]
-execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death,tag=!quadKill] at @s run scoreboard players add @a[scores={dd=0..},distance=..5,limit=1] kills 1
+execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death,tag=!quadKill] at @s if entity @a[scores={dd=0..},distance=..5] run tellraw @a ["",{"selector":"@s","color":"yellow"},{"text":" was meleed by ","color":"yellow"},{"selector":"@a[scores={dd=0..},distance=..5,limit=1]","color":"yellow"},{"text":".","color":"yellow"}]
+execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death] at @s run scoreboard players add @a[scores={dd=0..},distance=..5,limit=1] kills2 1
+execute as @a[scores={health=..0,otherDamage=1..},tag=!gun_death] at @s run scoreboard players add @a[scores={dd=0..},distance=..5,limit=1] kills 1
 
 #respawn particles + tp
 execute as @a[scores={health=..0}] at @s run particle minecraft:portal ~ ~ ~ 0.5 1 0.5 0 50
@@ -125,24 +122,27 @@ tag @a[scores={health=..0}] remove quadKill
 scoreboard players set @a[scores={health=..0}] respawnTimer 60
 scoreboard players set @a[scores={health=..0}] health 2000
 
-
-
 #health
 function flytre:health
 
 #scope
-replaceitem entity @a[scores={sneak=0}] armor.head air
-effect clear @a[scores={sneak=0}] minecraft:slowness
+replaceitem entity @a[scores={sneak=0},tag=slow] armor.head air
+effect clear @a[scores={sneak=0},tag=slow] minecraft:slowness
+tag @a[scores={sneak=0},tag=slow] remove slow
 effect give @a[scores={sneak=1..},nbt={SelectedItem:{tag:{scope:1}}},gamemode=!spectator] slowness 1 5 true
 replaceitem entity @a[scores={sneak=1..},nbt={SelectedItem:{tag:{scope:1}}},gamemode=!spectator] armor.head carved_pumpkin
+tag @a[scores={sneak=1..},nbt={SelectedItem:{tag:{scope:1}}},gamemode=!spectator] add slow
 scoreboard players set @a sneak 0
 
 #prevent item drops
 execute as @e[type=item,tag=!onDisplay] at @s run data merge entity @s {PickupDelay:0}
 
+#sat
+effect give @a minecraft:saturation 100 0 true
+
 #saber regens health
 scoreboard players add healthSeconds global 1
-execute if score healthSeconds global matches 20.. run scoreboard players add @a[nbt={SelectedItem:{tag:{type:"saber"}}}] health 10
+execute if score healthSeconds global matches 20.. run scoreboard players add @a[nbt={SelectedItem:{tag:{type:"saber"}}}] health 20
 execute if score healthSeconds global matches 20.. run scoreboard players set healthSeconds global 0
 
 #map effects

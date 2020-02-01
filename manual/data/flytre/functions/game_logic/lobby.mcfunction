@@ -3,6 +3,9 @@ effect give @a saturation 10 0 true
 effect give @a resistance 1 4 true
 effect give @a weakness 1 4 true
 
+tp @a[tag=!init] 87 28 44 -90 0
+tag @a add init
+
 execute as @a at @s unless entity @e[tag=lobby_start,distance=..60] run tp @s @e[tag=lobby_start,limit=1]
 execute at @e[tag=lobby_start,limit=1,sort=nearest] run spawnpoint @a ~ ~ ~
 scoreboard players set @a health 2000

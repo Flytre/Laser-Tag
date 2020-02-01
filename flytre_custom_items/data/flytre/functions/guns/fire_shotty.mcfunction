@@ -1,12 +1,12 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/23/2019 09:23
+#Created: 02/01/2020 17:56
 ####################################################################################################
 
 playsound flytre.shotgun.fire player @a[distance=..10] ~ ~ ~ 0.3
 scoreboard players set @s range 0
-scoreboard players set @s damage 700
+scoreboard players set @s damage 500
 function flytre:rand_num
 scoreboard players operation @s rng = num rng
 scoreboard players operation @s rng %= shotty spray

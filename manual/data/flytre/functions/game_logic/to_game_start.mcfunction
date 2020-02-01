@@ -5,6 +5,10 @@ scoreboard players set @a otherDamage 0
 scoreboard players set @a health 2000
 scoreboard players set @a rightclick 0
 
+worldborder center 0 0
+worldborder set 60000000
+
+execute as @a run function flytre:reset_abilities
 
 scoreboard players set @a kills 0
 
@@ -33,9 +37,13 @@ scoreboard players reset @a trigger
 
 scoreboard objectives setdisplay sidebar
 
+scoreboard players set @a kills2 0
+scoreboard players set @a kills 0
+
 tellraw @a ["",{"text":"------------","color":"green"},{"text":"\n"},{"text":"\n"},{"text":"Objective: ","color":"dark_gray"},{"text":"Kill enemy players to gain points for your team.","color":"gold"},{"text":"\n"},{"text":"------------","color":"green"}]
 scoreboard players add @a alt_font 0
 scoreboard players enable @a alt_font
 schedule function flytre:tips/tip_5 5s
 schedule function flytre:tips/tip_2 15s
 schedule function flytre:tips/tip_4 45s
+schedule function flytre:tips/tip_7 75s

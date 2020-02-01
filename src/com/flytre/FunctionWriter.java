@@ -7,8 +7,10 @@ import java.util.Date;
 public class FunctionWriter {
 
     public static final String dataLoc = "flytre_custom_items/data";
+    public static String currentLoc = "flytre_custom_items/data";
 
-     static void deleteOld() {
+
+    static void deleteOld() {
         FileHandler.deleteDirectory("flytre_custom_items");
     }
 
@@ -63,6 +65,38 @@ public class FunctionWriter {
         FileHandler.print(statment);
     }
 
+    public static void setLoc(String loc) {
+        currentLoc = loc;
+    }
+
+    public static void section(boolean large) {
+        FileHandler.setOutput(dataLoc + "/flytre/functions/"+currentLoc+".mcfunction");
+
+        if(!large)
+            FileHandler.print("");
+        else
+            for(int i = 0; i < 3; i++)
+                FileHandler.print("");
+    }
+
+    public static void state(String statment) {
+        FileHandler.setOutput(dataLoc + "/flytre/functions/"+currentLoc+".mcfunction");
+
+        FileHandler.print(statment);
+    }
+
+    public static void comment(String comment) {
+        FileHandler.setOutput(dataLoc + "/flytre/functions/"+currentLoc+".mcfunction");
+
+        FileHandler.print("#" + comment);
+    }
+
+    public static void scomment(String comment) {
+
+        section(false);
+        comment(comment);
+    }
+
 
      static void addObj(String name) {
         FileHandler.setOutput(dataLoc + "/flytre/functions/init_items.mcfunction");
@@ -75,6 +109,11 @@ public class FunctionWriter {
 
         FileHandler.print("scoreboard objectives add " + name + " " + criteria);
 
+    }
+
+    static void addObjComment(String comment) {
+        FileHandler.setOutput(dataLoc + "/flytre/functions/init_items.mcfunction");
+        FileHandler.print("#" + comment);
     }
 
 

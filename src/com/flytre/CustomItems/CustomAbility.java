@@ -10,6 +10,8 @@ public class CustomAbility implements CustomItem {
     private String sound;
     private String[] effect;
     private String message;
+    private int charges;
+    private int reloadTime;
 
 
     private String[] overTimeEffect;
@@ -17,20 +19,28 @@ public class CustomAbility implements CustomItem {
 
     public CustomAbility(Builder builder) throws InvalidItemException {
 
-        if(!builder.id.matches("[A-Za-z0-9_]{2,14}"))
-            throw new InvalidItemException("id","must be 2-14 alphanumeric characters, with underscores allowed");
+        if (!builder.id.matches("[A-Za-z0-9_]{2,14}"))
+            throw new InvalidItemException("id", "must be 2-14 alphanumeric characters, with underscores allowed");
 
-        if(builder.cooldown < 0)
+        if (builder.cooldown < 0)
             throw new InvalidItemException("cooldown", "must be 0 or a positive number");
 
-        if(builder.overTimeDuration > 0 && builder.overTimeEffect == null)
-            throw new InvalidItemException("overTimeEffectDuration","requires an over-time effect");
+        if (builder.reloadTime < 0)
+            throw new InvalidItemException("reloadTime", "must be 0 or a positive number");
 
-        if(builder.overTimeDuration <= 0 && builder.overTimeEffect != null)
-            throw new InvalidItemException("overTimeEffectDuration","must be a postive number");
 
-        if(builder.cooldown <= builder.overTimeDuration)
-            throw new InvalidItemException("overTimeDuration","over-time effect duration must be less than the cooldown");
+        if (builder.charges < 0)
+            throw new InvalidItemException("charges", "must be 0 or a positive number");
+
+
+        if (builder.overTimeDuration > 0 && builder.overTimeEffect == null)
+            throw new InvalidItemException("overTimeEffectDuration", "requires an over-time effect");
+
+        if (builder.overTimeDuration <= 0 && builder.overTimeEffect != null)
+            throw new InvalidItemException("overTimeEffectDuration", "must be a postive number");
+
+        if (builder.cooldown <= builder.overTimeDuration && builder.overTimeEffect != null)
+            throw new InvalidItemException("overTimeDuration", "over-time effect duration must be less than the cooldown");
 
 
         this.id = builder.id;
@@ -41,6 +51,8 @@ public class CustomAbility implements CustomItem {
         this.overTimeEffect = builder.overTimeEffect;
         this.overTimeDuration = builder.overTimeDuration;
         this.message = builder.message;
+        this.charges = builder.charges;
+        this.reloadTime = builder.reloadTime;
 
     }
 
@@ -55,6 +67,11 @@ public class CustomAbility implements CustomItem {
     public int getCooldown() {
         return cooldown;
     }
+
+    public void setCooldown(int cooldown) {
+        this.cooldown = cooldown;
+    }
+
 
     public String getSound() {
         return sound;
@@ -76,6 +93,14 @@ public class CustomAbility implements CustomItem {
         return message;
     }
 
+    public int getCharges() {
+        return charges;
+    }
+
+    public int getReloadTime() {
+        return reloadTime;
+    }
+
     public static class Builder implements CustomItem.Builder {
 
         private String id;
@@ -86,6 +111,8 @@ public class CustomAbility implements CustomItem {
         private String[] overTimeEffect = null;
         private int overTimeDuration = 0;
         private String message;
+        private int charges = 1;
+        private int reloadTime = 0;
 
 
         public Builder(String id) {
@@ -121,6 +148,16 @@ public class CustomAbility implements CustomItem {
 
         public Builder effect(String[] multiple) {
             effect = multiple;
+            return this;
+        }
+
+        public Builder charges(int k) {
+            charges = k;
+            return this;
+        }
+
+        public Builder reloadTime(int k) {
+            reloadTime = k;
             return this;
         }
 

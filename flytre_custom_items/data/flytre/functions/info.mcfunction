@@ -1,10 +1,9 @@
 ####################################################################################################
 #Automatically Generated File
 #Created Using: Flytre's Custom Item Generator
-#Created: 11/23/2019 09:23
+#Created: 02/01/2020 17:56
 ####################################################################################################
 
-tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"shotty\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"shotty\"}"}},{"text":": give yourself a(n) shotty ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"soft_sniper\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"soft_sniper\"}"}},{"text":": give yourself a(n) soft_sniper ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"hard_sniper\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"hard_sniper\"}"}},{"text":": give yourself a(n) hard_sniper ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"pistol_1\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"pistol_1\"}"}},{"text":": give yourself a(n) pistol_1 ability.","color":"green"}]
@@ -13,6 +12,13 @@ tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"pistol_3\"}","color
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"smg\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"smg\"}"}},{"text":": give yourself a(n) smg ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"ar_1\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"ar_1\"}"}},{"text":": give yourself a(n) ar_1 ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"ar_2\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"ar_2\"}"}},{"text":": give yourself a(n) ar_2 ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"shotty\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"shotty\"}"}},{"text":": give yourself a(n) shotty ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"ar_3\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"ar_3\"}"}},{"text":": give yourself a(n) ar_3 ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"goo\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"goo\"}"}},{"text":": give yourself a(n) goo ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"rocket\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"rocket\"}"}},{"text":": give yourself a(n) rocket ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"shocker\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"shocker\"}"}},{"text":": give yourself a(n) shocker ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"minigun\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"minigun\"}"}},{"text":": give yourself a(n) minigun ability.","color":"green"}]
+tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"firecracker\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"firecracker\"}"}},{"text":": give yourself a(n) firecracker ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"weak_heal\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"weak_heal\"}"}},{"text":": give yourself a(n) §eWeak Heal ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"strong_heal\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"strong_heal\"}"}},{"text":": give yourself a(n) §eStrong Heal ability.","color":"green"}]
 tellraw @s ["",{"text":"/give @s carrot_on_a_stick{ability:\"dash\"}","color":"gold","clickEvent":{"action":"suggest_command","value":"/give @s carrot_on_a_stick{ability:\"dash\"}"}},{"text":": give yourself a(n) §eDash ability.","color":"green"}]

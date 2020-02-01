@@ -24,22 +24,9 @@ execute if score players_green global matches 0 run title @a subtitle ["",{"text
 execute if score green_score global matches 10000.. run title @a subtitle ["",{"text":"Creeper Victory!","color":"green","bold":true}]
 execute if score blue_score global matches 10000.. run title @a subtitle ["",{"text":"Guardian Victory!","color":"blue","bold":true}]
 
+function flytre:game_logic/gen_leaderboard
 
-tellraw @a ["",{"text":"Final Score: "},{"score":{"name":"green_score","objective":"global"},"color":"green"},{"text":"-","color":"black"},{"score":{"name":"blue_score","objective":"global"},"color":"aqua"}]
-
-scoreboard players set highestKills global 0
-execute as @a run scoreboard players operation @s kills2 = @s kills
-scoreboard players operation highestKills global > @a kills
-scoreboard players operation @a kills2 -= highestKills global
-
-tellraw @a ["",{"text":"Highest Kills: ","color":"white"},{"selector":"@a[scores={kills2=0..}]","color":"white"},{"text":" with ","color":"white"},{"score":{"name":"@a[limit=1,scores={kills2=0}]","objective":"kills"}}]
-
-
-scoreboard players set @a kills2 0
-scoreboard players set @a kills 0
-
-tellraw @a ["",{"text":"Thank you for playing Laser Tag by Flytre.","color":"gold"}]
-
+tellraw @a {"text":"Click here to go to Flytre's Twitter.","color":"aqua","clickEvent":{"action":"open_url","value":"https://twitter.com/Flytre7"}}
 scoreboard players set green_score global 0
 scoreboard players set blue_score global 0
 

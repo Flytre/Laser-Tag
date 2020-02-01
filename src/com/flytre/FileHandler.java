@@ -126,7 +126,7 @@ public class FileHandler {
     }
 
     public static void main(String[] args) {
-        createDatapack("test");
+        System.out.println(readFile("/Users/aaron/Library/Application Support/minecraft/saves/laser_release/level.dat"));
     }
 
 }
